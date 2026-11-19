@@ -58,7 +58,7 @@ button:disabled{opacity:.5}
 </main>
 
 <script>
-const URL="https://nazbercjykxwizvfcjug.supabase.co";
+const PROJECT_URL="https://nazbercjykxwizvfcjug.supabase.co";
 const KEY="sb_publishable_2KDCJW1uETwld5SOBH5ztQ_oSpqZFuq";
 
 const $=id=>document.getElementById(id);
@@ -69,7 +69,7 @@ try{
  if(!window.supabase||!window.supabase.createClient){
   throw new Error("Не загрузилась библиотека Supabase. Проверь интернет.");
  }
- db=window.supabase.createClient(URL,KEY);
+ db=window.supabase.createClient(PROJECT_URL,KEY);
 }catch(e){
  sdkError=e.message||String(e);
  console.error(e);
