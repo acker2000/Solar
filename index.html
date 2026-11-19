@@ -9,23 +9,13 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box}
-body{
- margin:0;padding:20px 15px;background:#171322;color:white;
- font-family:Arial,sans-serif;text-align:center;
-}
+body{margin:0;padding:20px 15px;background:#171322;color:white;font-family:Arial,sans-serif;text-align:center}
 main{max-width:450px;margin:auto}
 h1{color:#ff75b5;font-size:30px}
 .card{background:#292139;padding:20px;border-radius:20px;margin-top:18px}
-input{
- width:100%;padding:14px;border-radius:10px;
- border:1px solid #65516f;background:#171322;color:white;
- font-size:17px;margin:7px 0;
-}
-button{
- width:100%;padding:15px;margin-top:12px;
- border:0;border-radius:12px;background:#ff75b5;
- color:#291326;font-size:17px;font-weight:bold;
-}
+input{width:100%;padding:14px;border-radius:10px;border:1px solid #65516f;background:#171322;color:white;font-size:17px;margin:7px 0}
+button{width:100%;padding:15px;margin-top:12px;border:0;border-radius:12px;background:#ff75b5;color:#291326;font-size:17px;font-weight:bold}
+button:disabled{opacity:.5}
 .secondary{background:#51415f;color:white}
 .hidden{display:none}
 .roomcode{font-size:30px;color:#ff91c1;letter-spacing:5px}
@@ -70,8 +60,20 @@ button{
 <script>
 const URL="https://nazbercjykxwizvfcjug.supabase.co";
 const KEY="sb_publishable_2KDCJW1uETwld5SOBH5ztQ_oSpqZFuq";
-const db=supabase.createClient(URL,KEY);
+
 const $=id=>document.getElementById(id);
+let db=null;
+let sdkError="";
+
+try{
+ if(!window.supabase||!window.supabase.createClient){
+  throw new Error("Не загрузилась библиотека Supabase. Проверь интернет.");
+ }
+ db=window.supabase.createClient(URL,KEY);
+}catch(e){
+ sdkError=e.message||String(e);
+ console.error(e);
+}
 
 const tg=window.Telegram?.WebApp;
 tg?.ready();
@@ -83,18 +85,19 @@ if(tg?.initDataUnsafe?.user?.first_name){
 
 let channel=null;
 let room="";
-let myName="";
 let spinning=false;
-let playerList=[];
 let round=0;
 
-function status(text){$("status").textContent=text}
+function status(message){
+ $("status").textContent=message;
+}
 
 function makeCode(){
  const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
  let code="";
- for(let i=0;i<6;i++)
+ for(let i=0;i<6;i++){
   code+=chars[Math.floor(Math.random()*chars.length)];
+ }
  return code;
 }
 
@@ -104,17 +107,19 @@ function getPlayers(){
  const all=[];
  Object.values(state).forEach(group=>{
   group.forEach(p=>{
-   if(p.name&&!all.some(x=>x.id===p.id))all.push(p);
+   if(p.name&&!all.some(x=>x.id===p.id)){
+    all.push(p);
+   }
   });
  });
  return all;
 }
 
 function renderPlayers(){
- playerList=getPlayers();
- $("count").textContent="Игроки: "+playerList.length+"/12";
+ const players=getPlayers();
+ $("count").textContent="Игроки: "+players.length+"/12";
  $("players").innerHTML="";
- playerList.forEach(p=>{
+ players.forEach(p=>{
   const el=document.createElement("span");
   el.className="player";
   el.textContent=p.name+(p.host?" 👑":"");
@@ -123,7 +128,15 @@ function renderPlayers(){
 }
 
 async function enterRoom(code,isHost){
- myName=$("nickname").value.trim()||"Игрок";
+ if(!db){
+  throw new Error(sdkError||"Supabase не подключён. Обнови страницу.");
+ }
+
+ const myName=$("nickname").value.trim()||"Игрок";
+ const id=String(
+  tg?.initDataUnsafe?.user?.id||
+  ("guest-"+Math.random().toString(36).slice(2))
+ );
 
  room=code;
  $("entry").classList.add("hidden");
@@ -131,11 +144,6 @@ async function enterRoom(code,isHost){
  $("roomCode").textContent=room;
  $("result").textContent="Ждём игроков!";
  status("Подключаемся...");
-
- const id=String(
-  tg?.initDataUnsafe?.user?.id||
-  ("guest-"+Math.random().toString(36).slice(2))
- );
 
  channel=db.channel("bottle-room-"+room,{
   config:{
@@ -146,9 +154,6 @@ async function enterRoom(code,isHost){
 
  channel.on("presence",{event:"sync"},()=>{
   renderPlayers();
-  if(getPlayers().length>12){
-   status("Комната заполнена (12 игроков)");
-  }
  });
 
  channel.on("broadcast",{event:"spin"},({payload})=>{
@@ -165,14 +170,16 @@ async function enterRoom(code,isHost){
    renderPlayers();
    status("Ты в комнате! Отправь друзьям код.");
   }
+
   if(s==="CHANNEL_ERROR"||s==="TIMED_OUT"){
-   status("Ошибка подключения. Проверь интернет.");
+   status("Ошибка подключения. Проверь интернет и Supabase.");
   }
  });
 }
 
 function showSpin(data){
  if(!data||!data.names||!data.names.length)return;
+
  spinning=true;
  $("spin").disabled=true;
 
@@ -191,17 +198,32 @@ function showSpin(data){
  },2200);
 }
 
-$("create").onclick=()=>{
- enterRoom(makeCode(),true);
+$("create").onclick=async()=>{
+ $("create").disabled=true;
+ try{
+  await enterRoom(makeCode(),true);
+ }catch(e){
+  console.error(e);
+  alert("Не удалось создать комнату: "+(e.message||e));
+  $("entry").classList.remove("hidden");
+  $("game").classList.add("hidden");
+ }finally{
+  $("create").disabled=false;
+ }
 };
 
-$("join").onclick=()=>{
+$("join").onclick=async()=>{
  const code=$("roomInput").value.trim().toUpperCase();
  if(code.length!==6){
   alert("Введи шестизначный код");
   return;
  }
- enterRoom(code,false);
+ try{
+  await enterRoom(code,false);
+ }catch(e){
+  console.error(e);
+  alert("Не удалось войти: "+(e.message||e));
+ }
 };
 
 $("spin").onclick=async()=>{
@@ -228,7 +250,9 @@ $("spin").onclick=async()=>{
   payload:data
  });
 
- if(result!=="ok")status("Не удалось отправить результат.");
+ if(result!=="ok"){
+  status("Не удалось отправить результат.");
+ }
 };
 
 $("copy").onclick=async()=>{
@@ -241,7 +265,7 @@ $("copy").onclick=async()=>{
 };
 
 $("leave").onclick=async()=>{
- if(channel){
+ if(channel&&db){
   await db.removeChannel(channel);
   channel=null;
  }
