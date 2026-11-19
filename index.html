@@ -1,0 +1,111 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Auto Kiss Clicker</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 25px;
+  background: #151522;
+  color: white;
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+
+h1 { color: #ff65a3; }
+
+.card {
+  background: #25253a;
+  padding: 25px;
+  border-radius: 20px;
+  margin-top: 25px;
+}
+
+button {
+  width: 100%;
+  padding: 17px;
+  margin-top: 15px;
+  border: 0;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+#start { background: #ff65a3; color: white; }
+#stop { background: #44445a; color: white; }
+
+#status {
+  color: #ffb5d1;
+  margin-top: 20px;
+}
+
+input {
+  width: 80px;
+  padding: 10px;
+  font-size: 18px;
+  text-align: center;
+  border-radius: 8px;
+}
+</style>
+</head>
+<body>
+
+<h1>💋 Auto Kiss Clicker</h1>
+
+<div class="card">
+  <h2>Автоматический кликер</h2>
+
+  <p>Интервал проверки (секунды)</p>
+  <input id="interval" type="number" value="5" min="1">
+
+  <button id="start">▶ СТАРТ</button>
+  <button id="stop">■ СТОП</button>
+
+  <h3 id="status">🔴 Остановлен</h3>
+  <p>Время работы: <span id="timer">0</span> сек.</p>
+</div>
+
+<script>
+const start = document.getElementById("start");
+const stop = document.getElementById("stop");
+const status = document.getElementById("status");
+const timer = document.getElementById("timer");
+
+let running = false;
+let seconds = 0;
+let clock = null;
+
+start.onclick = () => {
+  if (running) return;
+
+  running = true;
+  seconds = 0;
+  timer.textContent = "0";
+  status.textContent = "🟢 Кликер запущен";
+
+  clock = setInterval(() => {
+    seconds++;
+    timer.textContent = seconds;
+  }, 1000);
+};
+
+stop.onclick = () => {
+  running = false;
+  clearInterval(clock);
+  status.textContent = "🔴 Остановлен";
+};
+
+if (window.Telegram && window.Telegram.WebApp) {
+  Telegram.WebApp.ready();
+  Telegram.WebApp.expand();
+}
+</script>
+
+</body>
+</html>
