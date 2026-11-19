@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -96,8 +97,10 @@ button:disabled{opacity:.45}
 const PROJECT_URL="https://nazbercjykxwizvfcjug.supabase.co";
 const KEY="sb_publishable_2KDCJW1uETwld5SOBH5ztQ_oSpqZFuq";
 const $=id=>document.getElementById(id);
+
 let db=null,channel=null,room="",myId="",myName="",spinning=false,round=0;
 let activeRound=null,choices={},kissCounts={},resolvedRounds=new Set();
+let scoredChoices=new Set();
 let countdownInterval=null,roundTimeout=null,spinAnimationTimeout=null;
 
 try{
@@ -110,10 +113,12 @@ tg?.ready();tg?.expand();
 if(tg?.initDataUnsafe?.user?.first_name)$("nickname").value=tg.initDataUnsafe.user.first_name;
 
 function status(message){$("status").textContent=message;}
+
 function makeCode(){
  const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
  return Array.from({length:6},()=>chars[Math.floor(Math.random()*chars.length)]).join("");
 }
+
 function getPlayers(){
  if(!channel)return [];
  const all=[];
@@ -122,6 +127,7 @@ function getPlayers(){
  });
  return all;
 }
+
 function renderPlayers(){
  const players=getPlayers();
  $("count").textContent="Игроки: "+players.length+"/12";
@@ -132,166 +138,382 @@ function renderPlayers(){
   el.textContent=p.name+(p.host?" 👑":"")+" 💋 "+(kissCounts[p.id]||0);
   $("players").appendChild(el);
  });
+
 }
+
+// Начисляет поцелуй сразу тому, кого выбрали для поцелуя.
+// Один выбор одного игрока в одном раунде учитывается только один раз.
+function scoreKissChoice(roundId,playerId,choice){
+ if(choice!==true||!activeRound||activeRound.roundId!==roundId)return;
+
+ const choiceKey=roundId+":"+playerId;
+ if(scoredChoices.has(choiceKey))return;
+ scoredChoices.add(choiceKey);
+
+ let receiverId=null;
+
+ if(playerId===activeRound.pickerId){
+  receiverId=activeRound.targetId;
+ }else if(playerId===activeRound.targetId){
+  receiverId=activeRound.pickerId;
+ }
+
+ if(!receiverId)return;
+
+ kissCounts[receiverId]=(kissCounts[receiverId]||0)+1;
+ renderPlayers();
+}
+
 function clearRoundTimers(){
  if(countdownInterval)clearInterval(countdownInterval);
  if(roundTimeout)clearTimeout(roundTimeout);
  if(spinAnimationTimeout)clearTimeout(spinAnimationTimeout);
- countdownInterval=null;roundTimeout=null;spinAnimationTimeout=null;
+ countdownInterval=null;
+ roundTimeout=null;
+ spinAnimationTimeout=null;
 }
+
 async function enterRoom(code,isHost){
  if(!db)throw new Error("Supabase не подключён. Обнови страницу.");
+
  myName=$("nickname").value.trim()||"Игрок";
  myId=String(tg?.initDataUnsafe?.user?.id||("guest-"+Math.random().toString(36).slice(2)));
- room=code;kissCounts={};choices={};activeRound=null;resolvedRounds.clear();
- $("entry").classList.add("hidden");$("game").classList.remove("hidden");
- $("roomCode").textContent=room;$("result").textContent="Ждём игроков!";
- $("duel").classList.add("hidden");$("spin").disabled=false;status("Подключаемся...");
- channel=db.channel("bottle-room-"+room,{config:{presence:{key:myId},broadcast:{self:false}}});
+ room=code;
+ kissCounts={};
+ choices={};
+ activeRound=null;
+ resolvedRounds.clear();
+ scoredChoices.clear();
+
+ $("entry").classList.add("hidden");
+ $("game").classList.remove("hidden");
+ $("roomCode").textContent=room;
+ $("result").textContent="Ждём игроков!";
+ $("duel").classList.add("hidden");
+ $("spin").disabled=false;
+ status("Подключаемся...");
+
+ channel=db.channel("bottle-room-"+room,{
+  config:{presence:{key:myId},broadcast:{self:false}}
+ });
+
  channel.on("presence",{event:"sync"},renderPlayers);
  channel.on("broadcast",{event:"spin"},({payload})=>showSpin(payload));
  channel.on("broadcast",{event:"choice"},({payload})=>receiveChoice(payload));
  channel.on("broadcast",{event:"round-result"},({payload})=>applyResult(payload));
+
  channel.subscribe(async s=>{
   if(s==="SUBSCRIBED"){
    await channel.track({id:myId,name:myName,host:isHost});
-   renderPlayers();status("Ты в комнате! Отправь друзьям код.");
+   renderPlayers();
+   status("Ты в комнате! Отправь друзьям код.");
   }
-  if(s==="CHANNEL_ERROR"||s==="TIMED_OUT")status("Ошибка подключения. Проверь интернет и Supabase.");
+  if(s==="CHANNEL_ERROR"||s==="TIMED_OUT"){
+   status("Ошибка подключения. Проверь интернет и Supabase.");
+  }
  });
 }
+
 function showSpin(data){
  if(!data||!data.pickerId||!data.targetId)return;
- clearRoundTimers();activeRound=data;choices={};spinning=true;
- $("spin").disabled=true;$("duel").classList.add("hidden");
- const bottle=$("bottle");bottle.classList.remove("spin");void bottle.offsetWidth;bottle.classList.add("spin");
+
+ clearRoundTimers();
+ activeRound=data;
+ choices={};
+ spinning=true;
+
+ $("spin").disabled=true;
+ $("duel").classList.add("hidden");
+
+ const bottle=$("bottle");
+ bottle.classList.remove("spin");
+ void bottle.offsetWidth;
+ bottle.classList.add("spin");
+
  $("result").textContent="Бутылочка крутится...";
- $("pickerName").textContent=data.pickerName;$("targetName").textContent=data.targetName;
- $("pickerStatus").textContent="Ожидание";$("targetStatus").textContent="Ожидание";
- $("choiceButtons").classList.add("hidden");$("duelHint").textContent="Каждый выбирает самостоятельно";
+ $("pickerName").textContent=data.pickerName;
+ $("targetName").textContent=data.targetName;
+ $("pickerStatus").textContent="Ожидание";
+ $("targetStatus").textContent="Ожидание";
+ $("choiceButtons").classList.add("hidden");
+ $("duelHint").textContent="Каждый выбирает самостоятельно";
+
  spinAnimationTimeout=setTimeout(()=>{
   if(!activeRound||activeRound.roundId!==data.roundId)return;
-  bottle.classList.remove("spin");$("result").textContent="💋 Выбраны два игрока!";
-  $("duel").classList.remove("hidden");spinning=false;updateChoiceUI();startCountdown(data);
+
+  bottle.classList.remove("spin");
+  $("result").textContent="💋 Выбраны два игрока!";
+  $("duel").classList.remove("hidden");
+  spinning=false;
+  updateChoiceUI();
+  startCountdown(data);
  },2200);
 }
+
 function startCountdown(data){
  function tick(){
   if(!activeRound||activeRound.roundId!==data.roundId)return;
+
   const left=Math.max(0,Math.ceil((data.endsAt-Date.now())/1000));
   $("timer").textContent=left;
+
   if(left===0&&myId===data.pickerId)resolveRound(true);
  }
- tick();countdownInterval=setInterval(tick,250);
- if(myId===data.pickerId)roundTimeout=setTimeout(()=>resolveRound(true),Math.max(0,data.endsAt-Date.now()));
-}
-function updateChoiceUI(){
- if(!activeRound)return;
- const a=choices[activeRound.pickerId],b=choices[activeRound.targetId];
- $("pickerStatus").textContent=a===true?"💚 Согласен":a===false?"❌ Отказался":"Ожидает";
- $("targetStatus").textContent=b===true?"💚 Согласен":b===false?"❌ Отказался":"Ожидает";
- const participant=myId===activeRound.pickerId||myId===activeRound.targetId;
- const chosen=choices[myId]!==undefined;
- if(participant&&!chosen){
-  $("choiceButtons").classList.remove("hidden");$("duelHint").textContent="Выбери свой ответ";
- }else{
-  $("choiceButtons").classList.add("hidden");
-  $("duelHint").textContent=participant?"Твой ответ принят. Ждём второго игрока...":"Игроки выбирают...";
+
+ tick();
+ countdownInterval=setInterval(tick,250);
+
+ if(myId===data.pickerId){
+  roundTimeout=setTimeout(
+   ()=>resolveRound(true),
+   Math.max(0,data.endsAt-Date.now())
+  );
  }
 }
+
+function updateChoiceUI(){
+ if(!activeRound)return;
+
+ const a=choices[activeRound.pickerId];
+ const b=choices[activeRound.targetId];
+
+ $("pickerStatus").textContent=a===true?"💚 Поцелует":a===false?"❌ Отказался":"Ожидает";
+ $("targetStatus").textContent=b===true?"💚 Поцелует":b===false?"❌ Отказался":"Ожидает";
+
+ const participant=myId===activeRound.pickerId||myId===activeRound.targetId;
+ const chosen=choices[myId]!==undefined;
+
+ if(participant&&!chosen){
+  $("choiceButtons").classList.remove("hidden");
+  $("duelHint").textContent="Выбери свой ответ";
+ }else{
+  $("choiceButtons").classList.add("hidden");
+  $("duelHint").textContent=participant
+   ?"Твой ответ принят. Ждём второго игрока..."
+   :"Игроки выбирают...";
+ }
+}
+
 async function selectChoice(value){
  if(!activeRound)return;
  if(myId!==activeRound.pickerId&&myId!==activeRound.targetId)return;
  if(choices[myId]!==undefined||Date.now()>=activeRound.endsAt)return;
- choices[myId]=value;updateChoiceUI();
- const payload={roundId:activeRound.roundId,playerId:myId,choice:value};
- await channel.send({type:"broadcast",event:"choice",payload});
+
+ choices[myId]=value;
+
+ // Начисление происходит сразу при нажатии, не дожидаясь второго игрока.
+ scoreKissChoice(activeRound.roundId,myId,value);
+
+ updateChoiceUI();
+
+ const payload={
+  roundId:activeRound.roundId,
+  playerId:myId,
+  choice:value
+ };
+
+ await channel.send({
+  type:"broadcast",
+  event:"choice",
+  payload
+ });
+
  if(myId===activeRound.pickerId)resolveRound(false);
 }
+
 function receiveChoice(data){
  if(!activeRound||!data||data.roundId!==activeRound.roundId)return;
- choices[data.playerId]=data.choice;updateChoiceUI();
+
+ choices[data.playerId]=data.choice;
+
+ // На остальных устройствах начисляем тот же поцелуй сразу после получения события.
+ scoreKissChoice(data.roundId,data.playerId,data.choice);
+
+ updateChoiceUI();
+
  if(myId===activeRound.pickerId)resolveRound(false);
 }
+
 async function resolveRound(timedOut){
  if(!activeRound||myId!==activeRound.pickerId)return;
  if(resolvedRounds.has(activeRound.roundId))return;
- const pickerChoice=choices[activeRound.pickerId],targetChoice=choices[activeRound.targetId];
+
+ const pickerChoice=choices[activeRound.pickerId];
+ const targetChoice=choices[activeRound.targetId];
+
  if(!timedOut&&(pickerChoice===undefined||targetChoice===undefined))return;
+
  clearRoundTimers();
+
  const payload={
-  roundId:activeRound.roundId,pickerId:activeRound.pickerId,targetId:activeRound.targetId,
-  pickerName:activeRound.pickerName,targetName:activeRound.targetName,
-  pickerChoice,targetChoice,mutual:pickerChoice===true&&targetChoice===true,timedOut
+  roundId:activeRound.roundId,
+  pickerId:activeRound.pickerId,
+  targetId:activeRound.targetId,
+  pickerName:activeRound.pickerName,
+  targetName:activeRound.targetName,
+  pickerChoice,
+  targetChoice,
+  mutual:pickerChoice===true&&targetChoice===true,
+  timedOut
  };
+
  applyResult(payload);
- await channel.send({type:"broadcast",event:"round-result",payload});
+
+ await channel.send({
+  type:"broadcast",
+  event:"round-result",
+  payload
+ });
 }
+
 function applyResult(data){
  if(!data?.roundId||resolvedRounds.has(data.roundId))return;
- resolvedRounds.add(data.roundId);clearRoundTimers();
- if(data.mutual){
-  kissCounts[data.pickerId]=(kissCounts[data.pickerId]||0)+1;
-  kissCounts[data.targetId]=(kissCounts[data.targetId]||0)+1;
-  $("result").textContent="💋 Взаимный поцелуй! +1 обоим!";
+
+ resolvedRounds.add(data.roundId);
+ clearRoundTimers();
+
+ if(data.pickerChoice===true&&data.targetChoice===true){
+  $("result").textContent="💋 Взаимный поцелуй! Оба получили по +1!";
+ }else if(data.pickerChoice===true&&data.targetChoice===false){
+  $("result").textContent=data.pickerName+" поцеловал(а) "+data.targetName+"! "+data.targetName+" получил(а) +1.";
+ }else if(data.pickerChoice===false&&data.targetChoice===true){
+  $("result").textContent=data.targetName+" поцеловал(а) "+data.pickerName+"! "+data.pickerName+" получил(а) +1.";
+ }else if(data.pickerChoice===true){
+  $("result").textContent=data.pickerName+" выбрал(а) поцелуй! "+data.targetName+" получил(а) +1.";
+ }else if(data.targetChoice===true){
+  $("result").textContent=data.targetName+" выбрал(а) поцелуй! "+data.pickerName+" получил(а) +1.";
  }else if(data.timedOut){
   const missing=[];
   if(data.pickerChoice===undefined)missing.push(data.pickerName);
   if(data.targetChoice===undefined)missing.push(data.targetName);
-  $("result").textContent=missing.length?"⏰ Не ответил: "+missing.join(" и "):"Время вышло. Поцелуя не будет.";
+
+  $("result").textContent=missing.length
+   ?"⏰ Не ответил: "+missing.join(" и ")
+   :"Время вышло. Поцелуя не будет.";
  }else if(data.pickerChoice===false&&data.targetChoice===false){
   $("result").textContent="Оба отказались 🙅";
- }else if(data.pickerChoice===true&&data.targetChoice===false){
-  $("result").textContent=data.pickerName+" хотел поцеловать, но "+data.targetName+" отказался.";
- }else if(data.pickerChoice===false&&data.targetChoice===true){
-  $("result").textContent=data.targetName+" хотел поцеловать, но "+data.pickerName+" отказался.";
  }else{
   $("result").textContent="Поцелуй не состоялся.";
  }
- $("duelHint").textContent="Раунд завершён";$("choiceButtons").classList.add("hidden");
- $("timer").textContent="0";$("spin").disabled=false;activeRound=null;choices={};renderPlayers();
+
+ $("duelHint").textContent="Раунд завершён";
+ $("choiceButtons").classList.add("hidden");
+ $("timer").textContent="0";
+ $("spin").disabled=false;
+ activeRound=null;
+ choices={};
+ renderPlayers();
 }
+
 $("create").onclick=async()=>{
  $("create").disabled=true;
- try{await enterRoom(makeCode(),true);}
- catch(e){console.error(e);alert("Не удалось создать комнату: "+(e.message||e));$("entry").classList.remove("hidden");$("game").classList.add("hidden");}
- finally{$("create").disabled=false;}
+
+ try{
+  await enterRoom(makeCode(),true);
+ }catch(e){
+  console.error(e);
+  alert("Не удалось создать комнату: "+(e.message||e));
+  $("entry").classList.remove("hidden");
+  $("game").classList.add("hidden");
+ }finally{
+  $("create").disabled=false;
+ }
 };
+
 $("join").onclick=async()=>{
  const code=$("roomInput").value.trim().toUpperCase();
- if(code.length!==6){alert("Введи шестизначный код");return;}
- try{await enterRoom(code,false);}
- catch(e){console.error(e);alert("Не удалось войти: "+(e.message||e));}
+
+ if(code.length!==6){
+  alert("Введи шестизначный код");
+  return;
+ }
+
+ try{
+  await enterRoom(code,false);
+ }catch(e){
+  console.error(e);
+  alert("Не удалось войти: "+(e.message||e));
+ }
 };
+
 $("spin").onclick=async()=>{
  if(!channel||spinning||activeRound)return;
+
  const players=getPlayers();
- if(players.length<2){$("result").textContent="Нужно минимум 2 игрока!";return;}
+
+ if(players.length<2){
+  $("result").textContent="Нужно минимум 2 игрока!";
+  return;
+ }
+
  if(players.length>12)return;
+
  const others=players.filter(p=>p.id!==myId);
- if(!others.length){$("result").textContent="Не удалось выбрать второго игрока.";return;}
+
+ if(!others.length){
+  $("result").textContent="Не удалось выбрать второго игрока.";
+  return;
+ }
+
  const target=others[Math.floor(Math.random()*others.length)];
+
  const data={
-  pickerId:myId,pickerName:myName,targetId:target.id,targetName:target.name,
-  roundId:myId+"-"+Date.now()+"-"+(++round),endsAt:Date.now()+10000
+  pickerId:myId,
+  pickerName:myName,
+  targetId:target.id,
+  targetName:target.name,
+  roundId:myId+"-"+Date.now()+"-"+(++round),
+  endsAt:Date.now()+10000
  };
+
  showSpin(data);
- const result=await channel.send({type:"broadcast",event:"spin",payload:data});
- if(result!=="ok")status("Не удалось отправить результат. Попробуй ещё раз.");
+
+ const result=await channel.send({
+  type:"broadcast",
+  event:"spin",
+  payload:data
+ });
+
+ if(result!=="ok"){
+  status("Не удалось отправить результат. Попробуй ещё раз.");
+ }
 };
+
 $("kiss").onclick=()=>selectChoice(true);
 $("refuse").onclick=()=>selectChoice(false);
+
 $("copy").onclick=async()=>{
- try{await navigator.clipboard.writeText(room);$("copy").textContent="Код скопирован!";}
- catch(e){$("copy").textContent="Код: "+room;}
+ try{
+  await navigator.clipboard.writeText(room);
+  $("copy").textContent="Код скопирован!";
+ }catch(e){
+  $("copy").textContent="Код: "+room;
+ }
 };
+
 $("leave").onclick=async()=>{
  clearRoundTimers();
- if(channel&&db){await db.removeChannel(channel);channel=null;}
- $("game").classList.add("hidden");$("entry").classList.remove("hidden");
- $("players").innerHTML="";$("result").textContent="Ждём игроков!";
- $("duel").classList.add("hidden");$("spin").disabled=false;
- room="";myId="";activeRound=null;choices={};kissCounts={};resolvedRounds.clear();spinning=false;
+
+ if(channel&&db){
+  await db.removeChannel(channel);
+  channel=null;
+ }
+
+ $("game").classList.add("hidden");
+ $("entry").classList.remove("hidden");
+ $("players").innerHTML="";
+ $("result").textContent="Ждём игроков!";
+ $("duel").classList.add("hidden");
+ $("spin").disabled=false;
+
+ room="";
+ myId="";
+ activeRound=null;
+ choices={};
+ kissCounts={};
+ resolvedRounds.clear();
+ scoredChoices.clear();
+ spinning=false;
 };
 </script>
 </body>
