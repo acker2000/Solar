@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Auto Kiss Clicker</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; padding: 24px;
+      display: grid; place-items: center;
+      background: var(--tg-theme-bg-color, #10131a);
+      color: var(--tg-theme-text-color, #fff);
+      font: 16px -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    main {
+      width: min(100%, 420px); padding: 24px; border-radius: 24px;
+      background: var(--tg-theme-secondary-bg-color, #202633);
+      text-align: center;
+    }
+    .emoji { font-size: 64px; margin: 8px 0 16px; }
+    h1 { font-size: 26px; margin: 8px 0; }
+    p { color: var(--tg-theme-hint-color, #aab2c0); line-height: 1.45; }
+    button {
+      width: 100%; border: 0; border-radius: 14px; padding: 16px;
+      margin-top: 12px; font-size: 17px; font-weight: 700;
+      background: var(--tg-theme-button-color, #3390ec);
+      color: var(--tg-theme-button-text-color, white);
+    }
+    button.secondary { background: #626b78; }
+    .count { font-size: 32px; font-weight: 800; margin: 10px; }
+    .note { font-size: 13px; margin-top: 18px; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="emoji">🍾❤️</div>
+    <h1>Auto Kiss Clicker</h1>
+    <p>Панель управления Mini App</p>
+    <div class="count" id="count">0</div>
+    <p>Нажатий в этой демонстрации</p>
+    <button id="start">Запустить демонстрацию</button>
+    <button id="stop" class="secondary">Стоп</button>
+    <p class="note" id="status">Ожидание запуска</p>
+    <p class="note">Это только интерфейс приложения. Он не видит экран и не нажимает кнопки в чужой игре @spinthe_bot.</p>
+  </main>
+  <script>
+    const tg = window.Telegram && window.Telegram.WebApp;
+    if (tg) { tg.ready(); tg.expand(); }
+    let timer = null, count = 0;
+    const countEl = document.getElementById('count');
+    const statusEl = document.getElementById('status');
+    document.getElementById('start').addEventListener('click', () => {
+      if (timer) return;
+      statusEl.textContent = 'Демонстрация запущена';
+      timer = setInterval(() => {
+        count++;
+        countEl.textContent = count;
+      }, 1000);
+    });
+    document.getElementById('stop').addEventListener('click', () => {
+      if (timer) clearInterval(timer);
+      timer = null;
+      statusEl.textContent = 'Остановлено';
+    });
+  </script>
+</body>
+</html>
