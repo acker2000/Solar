@@ -4,108 +4,253 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Auto Kiss Clicker</title>
+<title>Бутылочка 🍾</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-* { box-sizing: border-box; }
-
-body {
-  margin: 0;
-  padding: 25px;
-  background: #151522;
-  color: white;
-  font-family: Arial, sans-serif;
-  text-align: center;
+*{box-sizing:border-box}
+body{
+ margin:0;padding:20px 15px;background:#171322;color:white;
+ font-family:Arial,sans-serif;text-align:center;
 }
-
-h1 { color: #ff65a3; }
-
-.card {
-  background: #25253a;
-  padding: 25px;
-  border-radius: 20px;
-  margin-top: 25px;
+main{max-width:450px;margin:auto}
+h1{color:#ff75b5;font-size:30px}
+.card{background:#292139;padding:20px;border-radius:20px;margin-top:18px}
+input{
+ width:100%;padding:14px;border-radius:10px;
+ border:1px solid #65516f;background:#171322;color:white;
+ font-size:17px;margin:7px 0;
 }
-
-button {
-  width: 100%;
-  padding: 17px;
-  margin-top: 15px;
-  border: 0;
-  border-radius: 12px;
-  font-size: 18px;
-  font-weight: bold;
+button{
+ width:100%;padding:15px;margin-top:12px;
+ border:0;border-radius:12px;background:#ff75b5;
+ color:#291326;font-size:17px;font-weight:bold;
 }
-
-#start { background: #ff65a3; color: white; }
-#stop { background: #44445a; color: white; }
-
-#status {
-  color: #ffb5d1;
-  margin-top: 20px;
-}
-
-input {
-  width: 80px;
-  padding: 10px;
-  font-size: 18px;
-  text-align: center;
-  border-radius: 8px;
-}
+.secondary{background:#51415f;color:white}
+.hidden{display:none}
+.roomcode{font-size:30px;color:#ff91c1;letter-spacing:5px}
+.players{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:15px 0}
+.player{background:#493654;padding:9px 13px;border-radius:20px}
+.arena{height:200px;display:grid;place-items:center}
+.bottle{font-size:105px;display:inline-block}
+.spin{animation:spin 2.2s cubic-bezier(.12,.72,.2,1)}
+@keyframes spin{to{transform:rotate(1440deg)}}
+.result{font-size:21px;color:#ff91c1;min-height:30px;font-weight:bold}
+.status{font-size:13px;color:#c5b4d1;margin-top:12px}
+.small{font-size:13px;color:#c5b4d1}
 </style>
 </head>
 <body>
+<main>
+<h1>🍾 Бутылочка</h1>
+<p class="small">Играйте вместе — до 12 человек!</p>
 
-<h1>💋 Auto Kiss Clicker</h1>
+<section class="card" id="entry">
+<input id="nickname" maxlength="20" placeholder="Твоё имя">
+<button id="create">Создать комнату</button>
+<p>Или введи код комнаты:</p>
+<input id="roomInput" maxlength="6" placeholder="КОД КОМНАТЫ">
+<button class="secondary" id="join">Присоединиться</button>
+</section>
 
-<div class="card">
-  <h2>Автоматический кликер</h2>
-
-  <p>Интервал проверки (секунды)</p>
-  <input id="interval" type="number" value="5" min="1">
-
-  <button id="start">▶ СТАРТ</button>
-  <button id="stop">■ СТОП</button>
-
-  <h3 id="status">🔴 Остановлен</h3>
-  <p>Время работы: <span id="timer">0</span> сек.</p>
-</div>
+<section class="card hidden" id="game">
+<p class="small">КОД КОМНАТЫ</p>
+<div class="roomcode" id="roomCode"></div>
+<button class="secondary" id="copy">Скопировать код</button>
+<p id="count">Игроки: 0/12</p>
+<div class="players" id="players"></div>
+<div class="arena"><div class="bottle" id="bottle">🍾</div></div>
+<div class="result" id="result">Ждём игроков!</div>
+<button id="spin">🍾 Крутить бутылочку</button>
+<button class="secondary" id="leave">Выйти из комнаты</button>
+<div class="status" id="status">Подключение...</div>
+</section>
+</main>
 
 <script>
-const start = document.getElementById("start");
-const stop = document.getElementById("stop");
-const status = document.getElementById("status");
-const timer = document.getElementById("timer");
+const URL="https://nazbercjykxwizvfcjug.supabase.co";
+const KEY="sb_publishable_2KDCJW1uETwld5SOBH5ztQ_oSpqZFuq";
+const db=supabase.createClient(URL,KEY);
+const $=id=>document.getElementById(id);
 
-let running = false;
-let seconds = 0;
-let clock = null;
+const tg=window.Telegram?.WebApp;
+tg?.ready();
+tg?.expand();
 
-start.onclick = () => {
-  if (running) return;
-
-  running = true;
-  seconds = 0;
-  timer.textContent = "0";
-  status.textContent = "🟢 Кликер запущен";
-
-  clock = setInterval(() => {
-    seconds++;
-    timer.textContent = seconds;
-  }, 1000);
-};
-
-stop.onclick = () => {
-  running = false;
-  clearInterval(clock);
-  status.textContent = "🔴 Остановлен";
-};
-
-if (window.Telegram && window.Telegram.WebApp) {
-  Telegram.WebApp.ready();
-  Telegram.WebApp.expand();
+if(tg?.initDataUnsafe?.user?.first_name){
+ $("nickname").value=tg.initDataUnsafe.user.first_name;
 }
-</script>
 
+let channel=null;
+let room="";
+let myName="";
+let spinning=false;
+let playerList=[];
+let round=0;
+
+function status(text){$("status").textContent=text}
+
+function makeCode(){
+ const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+ let code="";
+ for(let i=0;i<6;i++)
+  code+=chars[Math.floor(Math.random()*chars.length)];
+ return code;
+}
+
+function getPlayers(){
+ if(!channel)return [];
+ const state=channel.presenceState();
+ const all=[];
+ Object.values(state).forEach(group=>{
+  group.forEach(p=>{
+   if(p.name&&!all.some(x=>x.id===p.id))all.push(p);
+  });
+ });
+ return all;
+}
+
+function renderPlayers(){
+ playerList=getPlayers();
+ $("count").textContent="Игроки: "+playerList.length+"/12";
+ $("players").innerHTML="";
+ playerList.forEach(p=>{
+  const el=document.createElement("span");
+  el.className="player";
+  el.textContent=p.name+(p.host?" 👑":"");
+  $("players").appendChild(el);
+ });
+}
+
+async function enterRoom(code,isHost){
+ myName=$("nickname").value.trim()||"Игрок";
+
+ room=code;
+ $("entry").classList.add("hidden");
+ $("game").classList.remove("hidden");
+ $("roomCode").textContent=room;
+ $("result").textContent="Ждём игроков!";
+ status("Подключаемся...");
+
+ const id=String(
+  tg?.initDataUnsafe?.user?.id||
+  ("guest-"+Math.random().toString(36).slice(2))
+ );
+
+ channel=db.channel("bottle-room-"+room,{
+  config:{
+   presence:{key:id},
+   broadcast:{self:false}
+  }
+ });
+
+ channel.on("presence",{event:"sync"},()=>{
+  renderPlayers();
+  if(getPlayers().length>12){
+   status("Комната заполнена (12 игроков)");
+  }
+ });
+
+ channel.on("broadcast",{event:"spin"},({payload})=>{
+  showSpin(payload);
+ });
+
+ channel.subscribe(async s=>{
+  if(s==="SUBSCRIBED"){
+   await channel.track({
+    id:id,
+    name:myName,
+    host:isHost
+   });
+   renderPlayers();
+   status("Ты в комнате! Отправь друзьям код.");
+  }
+  if(s==="CHANNEL_ERROR"||s==="TIMED_OUT"){
+   status("Ошибка подключения. Проверь интернет.");
+  }
+ });
+}
+
+function showSpin(data){
+ if(!data||!data.names||!data.names.length)return;
+ spinning=true;
+ $("spin").disabled=true;
+
+ const bottle=$("bottle");
+ bottle.classList.remove("spin");
+ void bottle.offsetWidth;
+ bottle.classList.add("spin");
+
+ $("result").textContent="Бутылочка крутится...";
+
+ setTimeout(()=>{
+  $("result").textContent="💋 Выпало: "+data.names[data.index]+"!";
+  bottle.classList.remove("spin");
+  spinning=false;
+  $("spin").disabled=false;
+ },2200);
+}
+
+$("create").onclick=()=>{
+ enterRoom(makeCode(),true);
+};
+
+$("join").onclick=()=>{
+ const code=$("roomInput").value.trim().toUpperCase();
+ if(code.length!==6){
+  alert("Введи шестизначный код");
+  return;
+ }
+ enterRoom(code,false);
+};
+
+$("spin").onclick=async()=>{
+ if(!channel||spinning)return;
+
+ const names=getPlayers().map(p=>p.name);
+ if(names.length<2){
+  $("result").textContent="Нужно минимум 2 игрока!";
+  return;
+ }
+ if(names.length>12)return;
+
+ const data={
+  names:names,
+  index:Math.floor(Math.random()*names.length),
+  round:++round
+ };
+
+ showSpin(data);
+
+ const result=await channel.send({
+  type:"broadcast",
+  event:"spin",
+  payload:data
+ });
+
+ if(result!=="ok")status("Не удалось отправить результат.");
+};
+
+$("copy").onclick=async()=>{
+ try{
+  await navigator.clipboard.writeText(room);
+  $("copy").textContent="Код скопирован!";
+ }catch(e){
+  $("copy").textContent="Код: "+room;
+ }
+};
+
+$("leave").onclick=async()=>{
+ if(channel){
+  await db.removeChannel(channel);
+  channel=null;
+ }
+ $("game").classList.add("hidden");
+ $("entry").classList.remove("hidden");
+ $("players").innerHTML="";
+ $("result").textContent="Ждём игроков!";
+ room="";
+};
+</script>
 </body>
 </html>
