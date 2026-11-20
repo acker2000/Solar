@@ -1,285 +1,638 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Solar Tycoon</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
 <style>
+:root{--bg:#101b24;--panel:#172833;--line:#2b4652;--gold:#f5c451;--muted:#a9bec8}
 *{box-sizing:border-box}
-body{margin:0;padding:16px;background:#101923;color:#fff;font-family:Arial,sans-serif}
-h1{text-align:center;color:#ffd45a;margin:8px 0 18px}
-.card{background:#1d2b3a;border-radius:15px;padding:15px;margin:12px 0}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.stat{background:#26394c;padding:12px;border-radius:12px;text-align:center}
-.stat strong{display:block;color:#ffd45a;font-size:20px;margin-top:5px}
-button{width:100%;padding:14px;margin:6px 0;border:0;border-radius:10px;background:#f5bd42;color:#18202a;font-weight:bold;font-size:16px}
-button:disabled{opacity:.45}
-.small{color:#aab9c8;font-size:12px;text-align:center}
-#status{text-align:center;color:#a9d6ff;font-size:13px;margin:10px}
-canvas{width:100%;background:#26394c;border-radius:12px}
+html,body{margin:0;width:100%;height:100%;background:var(--bg);color:#f3f7f8;font-family:Arial,sans-serif;overflow:hidden}
+body{display:flex;flex-direction:column;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+header{flex:none;padding:9px 13px;background:linear-gradient(135deg,#142a35,#203d48);display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #34505b}
+.brand{font-size:17px;font-weight:800}
+.brand span{color:var(--gold)}
+.sub{font-size:10px;color:var(--muted);margin-top:2px}
+.money{font-weight:800;color:var(--gold);font-size:16px}
+.stats{flex:none;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:7px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:7px 6px;min-width:0}
+.stat small{display:block;color:var(--muted);font-size:9px;margin-bottom:4px}
+.stat strong{font-size:13px;white-space:nowrap}
+main{flex:1;min-height:0;display:flex;flex-direction:column;padding:0 8px 7px;gap:5px}
+.scene-wrap{position:relative;flex:1;min-height:190px;background:#233d36;border:1px solid #38554b;border-radius:13px;overflow:hidden;box-shadow:0 8px 22px #0004}
+canvas{display:block;width:100%;height:100%;touch-action:none}
+.scene-head{position:absolute;z-index:2;top:7px;left:8px;right:8px;display:flex;justify-content:space-between;pointer-events:none}
+.pill{background:#10231fdd;border:1px solid #597265;border-radius:20px;padding:5px 8px;font-size:9px;color:#e5f5e9}
+.hint{flex:none;font-size:10px;color:#b5c8c0;text-align:center;padding:2px}
+.section-title{flex:none;font-size:13px;font-weight:800;margin:2px 2px 0}
+.tools{flex:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+.tool{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:7px 4px;text-align:center;color:#fff;min-height:65px;min-width:0}
+.tool.active{border:2px solid var(--gold);padding:6px 3px;background:#2d3c37}
+.tool:disabled{opacity:.4}
+.tool .emoji{font-size:18px;display:block}
+.tool b{font-size:10px;display:block;margin:3px 0}
+.tool small{font-size:9px;color:var(--muted);display:block}
+.tool .price{color:var(--gold);font-weight:700;margin-top:3px;font-size:10px}
+.actions{flex:none;display:flex;gap:6px}
+.action{flex:1;background:#284653;color:#fff;border:1px solid #45616b;border-radius:9px;padding:9px 5px;font-weight:700;font-size:11px}
+.action.primary{background:#d9a938;color:#1d281f;border-color:#f1cb64}
+.action:disabled{opacity:.4}
+.log{flex:none;background:#14242d;border:1px solid #2b414b;border-radius:9px;padding:7px;font-size:10px;color:#c2d3d9;min-height:31px;max-height:42px;overflow:auto}
+.camera-controls{position:absolute;right:8px;bottom:8px;display:flex;gap:5px;z-index:3}
+.camera-controls button{background:#10231fdd;color:#fff;border:1px solid #789083;border-radius:8px;padding:7px 9px;font-size:14px}
+@media(max-height:700px){
+.stats{padding:5px}
+.stat{padding:5px}
+.tool{min-height:57px}
+.scene-wrap{min-height:150px}
+.log{min-height:27px;padding:5px}
+}
 </style>
 </head>
+
 <body>
+<header>
+  <div>
+    <div class="brand">☀️ SOLAR <span>TYCOON</span></div>
+    <div class="sub">Симулятор солнечной электростанции</div>
+  </div>
+  <div class="money" id="money">₴ 25 000</div>
+</header>
 
-<h1>☀️ SOLAR TYCOON</h1>
-
-<div id="status">Подключение к игре...</div>
-
-<div class="card stats">
-  <div class="stat">День<strong id="day">1</strong></div>
-  <div class="stat">Деньги<strong id="money">25 000 ₴</strong></div>
-  <div class="stat">Мощность<strong id="power">0 кВт</strong></div>
-  <div class="stat">Энергия<strong id="energy">0 кВт⋅ч</strong></div>
+<div class="stats">
+  <div class="stat"><small>МОЩНОСТЬ</small><strong id="power">0 кВт</strong></div>
+  <div class="stat"><small>ВЫРАБОТКА</small><strong id="energy">0 кВт·ч</strong></div>
+  <div class="stat"><small>ДОХОД ЗА ДЕНЬ</small><strong id="income">₴ 0</strong></div>
 </div>
 
-<div class="card">
-  <h3>🏭 Моя солнечная станция</h3>
-  <canvas id="scene" width="600" height="260"></canvas>
-  <p class="small">Построй станцию и продавай электричество</p>
-</div>
+<main>
+  <div class="scene-wrap">
+    <div class="scene-head">
+      <span class="pill" id="weather">☀️ Ясно · День 1</span>
+      <span class="pill" id="site">Участок 1 · 0 объектов</span>
+    </div>
 
-<div class="card">
-  <h3>🛒 Оборудование</h3>
-  <button id="buyPanel">☀️ Панель 550 Вт — 2 500 ₴</button>
-  <button id="buyInverter">⚡ Инвертор — 8 000 ₴</button>
-  <button id="buyBattery">🔋 Аккумулятор 10 кВт⋅ч — 6 500 ₴</button>
-  <button id="buyTransformer">🏭 Трансформатор — 12 000 ₴</button>
-</div>
+    <canvas id="world"></canvas>
 
-<div class="card">
-  <h3>⚡ Электростанция</h3>
-  <p>Панели: <b id="panels">0</b></p>
-  <p>Инверторы: <b id="inverters">0</b></p>
-  <p>Аккумуляторы: <b id="batteries">0</b></p>
-  <p>Трансформаторы: <b id="transformers">0</b></p>
-  <p>Общий доход: <b id="income">0 ₴</b></p>
-  <button id="nextDay">🌅 Следующий день</button>
-  <button id="sell">💰 Продать накопленную энергию</button>
-</div>
+    <div class="camera-controls">
+      <button id="zoomOut">−</button>
+      <button id="rotate">⟳</button>
+      <button id="zoomIn">+</button>
+    </div>
+  </div>
+
+  <div class="hint" id="hint">Выбери оборудование и нажми на свободную клетку участка. Перетаскивай карту одним пальцем.</div>
+
+  <div class="section-title">Строительство станции</div>
+
+  <div class="tools">
+    <button class="tool active" data-type="panel">
+      <span class="emoji">🔋</span><b>Панель</b><small>550 Вт</small><div class="price">₴ 2 500</div>
+    </button>
+    <button class="tool" data-type="inverter">
+      <span class="emoji">⚡</span><b>Инвертор</b><small>Преобразование</small><div class="price">₴ 8 000</div>
+    </button>
+    <button class="tool" data-type="battery">
+      <span class="emoji">🟩</span><b>Аккумулятор</b><small>10 кВт·ч</small><div class="price">₴ 6 500</div>
+    </button>
+    <button class="tool" data-type="transformer">
+      <span class="emoji">🏭</span><b>Трансформатор</b><small>Электросеть</small><div class="price">₴ 12 000</div>
+    </button>
+  </div>
+
+  <div class="actions">
+    <button class="action primary" id="sell">Продать энергию</button>
+    <button class="action" id="nextday">⏩ Следующий день</button>
+    <button class="action" id="expand">+ Земля ₴10 000</button>
+  </div>
+
+  <div class="log" id="log">Добро пожаловать! Построй первую солнечную панель.</div>
+</main>
 
 <script>
-const SUPABASE_URL = "https://nazbercjykxwizvfcjug.supabase.co";
-const SUPABASE_KEY = "sb_publishable_2KDCJW1uETwld5SOBH5ztQ_oSpqZFuq";
-const SAVE_URL = SUPABASE_URL + "/functions/v1/solar-save";
+(()=>{
+const tg=window.Telegram?.WebApp;
+try{tg?.ready();tg?.expand();}catch(e){}
 
-const tg = window.Telegram && window.Telegram.WebApp;
-if (tg) {
-  tg.ready();
-  tg.expand();
+const canvas=document.getElementById('world');
+const ctx=canvas.getContext('2d');
+const $=id=>document.getElementById(id);
+
+let cash=25000,day=1,selected='panel';
+let items=[],energy=0,totalEnergy=0,earned=0;
+let weather='sun',cols=9,rows=7;
+
+const costs={
+  panel:2500,
+  inverter:8000,
+  battery:6500,
+  transformer:12000
+};
+
+const names={
+  panel:'Солнечная панель',
+  inverter:'Инвертор',
+  battery:'Аккумулятор',
+  transformer:'Трансформатор'
+};
+
+let cam={x:0,y:0,zoom:1,angle:0};
+let size={w:900,h:900};
+let pointers=new Map();
+let gesture=null;
+
+function save(){
+  try{
+    localStorage.setItem('solarTycoonSave',JSON.stringify({
+      cash,day,items,energy,totalEnergy,earned,cols,rows
+    }));
+  }catch(e){}
 }
 
-let money = 25000;
-let panels = 0;
-let inverters = 0;
-let batteries = 0;
-let transformers = 0;
-let energy = 0;
-let totalIncome = 0;
-let day = 1;
-let weather = 1;
-let loaded = false;
-let saveQueue = Promise.resolve();
-
-const statusEl = document.getElementById("status");
-
-function setStatus(message, error=false) {
-  statusEl.textContent = message;
-  statusEl.style.color = error ? "#ff8585" : "#a9d6ff";
+function load(){
+  try{
+    const s=JSON.parse(localStorage.getItem('solarTycoonSave')||'null');
+    if(s){
+      cash=s.cash??cash;
+      day=s.day??day;
+      items=Array.isArray(s.items)?s.items:[];
+      energy=s.energy??0;
+      totalEnergy=s.totalEnergy??0;
+      earned=s.earned??0;
+      cols=s.cols??cols;
+      rows=s.rows??rows;
+    }
+  }catch(e){}
 }
 
-function gameData() {
-  return {
-    money, panels, inverters, batteries, transformers,
-    energy, totalIncome, day, weather
+function resize(){
+  const r=canvas.getBoundingClientRect();
+  const d=Math.min(devicePixelRatio||1,2);
+  size.w=r.width;
+  size.h=r.height;
+  canvas.width=Math.max(1,Math.round(r.width*d));
+  canvas.height=Math.max(1,Math.round(r.height*d));
+  ctx.setTransform(d,0,0,d,0,0);
+  draw();
+}
+
+const tw=62,th=31;
+
+function project(x,y){
+  const xx=(x-y)*tw/2;
+  const yy=(x+y)*th/2;
+  const a=cam.angle;
+  const c=Math.cos(a),s=Math.sin(a);
+
+  return{
+    x:size.w/2+cam.x+(xx*c-yy*s)*cam.zoom,
+    y:size.h*.51+cam.y+(xx*s+yy*c)*cam.zoom
   };
 }
 
-function applyGameData(data) {
-  if (!data || typeof data !== "object") return;
-  money = Number(data.money ?? 25000);
-  panels = Number(data.panels ?? 0);
-  inverters = Number(data.inverters ?? 0);
-  batteries = Number(data.batteries ?? 0);
-  transformers = Number(data.transformers ?? 0);
-  energy = Number(data.energy ?? 0);
-  totalIncome = Number(data.totalIncome ?? 0);
-  day = Number(data.day ?? 1);
-  weather = Number(data.weather ?? 1);
-}
-
-async function cloudRequest(action, data) {
-  const response = await fetch(SAVE_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "apikey": SUPABASE_KEY
-    },
-    body: JSON.stringify({
-      action,
-      initData: tg ? tg.initData : "",
-      ...(data ? { gameData: data } : {})
-    })
+function poly(points,fill,stroke){
+  ctx.beginPath();
+  points.forEach((p,i)=>{
+    i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y);
   });
+  ctx.closePath();
+  ctx.fillStyle=fill;
+  ctx.fill();
 
-  const result = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(result.error || `Ошибка сервера: ${response.status}`);
-  }
-  return result;
-}
-
-async function loadGame() {
-  if (!tg || !tg.initData) {
-    setStatus("Открой игру через Telegram, чтобы загрузить сохранение.", true);
-    return;
-  }
-
-  try {
-    setStatus("Загружаем сохранение...");
-    const result = await cloudRequest("load");
-
-    if (result.gameData) {
-      applyGameData(result.gameData);
-      setStatus("☁️ Сохранение загружено!");
-    } else {
-      setStatus("Новая игра! Прогресс будет сохраняться автоматически.");
-    }
-
-    loaded = true;
-    update();
-  } catch (error) {
-    setStatus("Не удалось загрузить: " + error.message, true);
-    console.error(error);
-  }
-}
-
-function queueSave() {
-  if (!loaded) return;
-
-  const snapshot = gameData();
-  saveQueue = saveQueue.then(async () => {
-    setStatus("☁️ Сохраняем...");
-    await cloudRequest("save", snapshot);
-    setStatus("☁️ Прогресс сохранён");
-  }).catch(error => {
-    setStatus("Ошибка сохранения: " + error.message, true);
-    console.error(error);
-  });
-}
-
-function update() {
-  document.getElementById("money").textContent =
-    Math.floor(money).toLocaleString("ru-RU") + " ₴";
-  document.getElementById("power").textContent =
-    (panels * 0.55).toFixed(2) + " кВт";
-  document.getElementById("energy").textContent =
-    energy.toFixed(1) + " кВт⋅ч";
-  document.getElementById("day").textContent = day;
-  document.getElementById("panels").textContent = panels;
-  document.getElementById("inverters").textContent = inverters;
-  document.getElementById("batteries").textContent = batteries;
-  document.getElementById("transformers").textContent = transformers;
-  document.getElementById("income").textContent =
-    Math.floor(totalIncome).toLocaleString("ru-RU") + " ₴";
-  drawScene();
-}
-
-function buy(type, price) {
-  if (!loaded) return;
-  if (money < price) {
-    setStatus("Недостаточно денег!", true);
-    return;
-  }
-
-  money -= price;
-  if (type === "panels") panels++;
-  if (type === "inverters") inverters++;
-  if (type === "batteries") batteries++;
-  if (type === "transformers") transformers++;
-
-  update();
-  queueSave();
-}
-
-function nextDay() {
-  if (!loaded) return;
-
-  day++;
-  weather = 0.5 + Math.random() * 0.8;
-
-  const generated = panels * 0.55 * 5 * weather;
-  const usable = Math.min(generated, inverters * 5);
-  energy += usable;
-
-  update();
-  queueSave();
-}
-
-function sellEnergy() {
-  if (!loaded) return;
-  if (energy <= 0) {
-    setStatus("Пока нет энергии для продажи.");
-    return;
-  }
-
-  const earnings = energy * 8;
-  money += earnings;
-  totalIncome += earnings;
-  energy = 0;
-
-  update();
-  queueSave();
-}
-
-function drawScene() {
-  const canvas = document.getElementById("scene");
-  const ctx = canvas.getContext("2d");
-  ctx.setTransform(1,0,0,1,0,0);
-  ctx.clearRect(0,0,600,260);
-
-  ctx.fillStyle = "#83b6d5";
-  ctx.fillRect(0,0,600,260);
-  ctx.fillStyle = "#4c8652";
-  ctx.fillRect(0,165,600,95);
-
-  for (let i=0; i<Math.min(panels,12); i++) {
-    const x = 35 + (i%4)*135;
-    const y = 80 + Math.floor(i/4)*55;
-    ctx.fillStyle = "#172f52";
-    ctx.fillRect(x,y,100,38);
-    ctx.strokeStyle = "#6ca9d9";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(x,y,100,38);
-    ctx.beginPath();
-    ctx.moveTo(x+50,y);
-    ctx.lineTo(x+50,y+38);
-    ctx.moveTo(x,y+19);
-    ctx.lineTo(x+100,y+19);
+  if(stroke){
+    ctx.strokeStyle=stroke;
+    ctx.lineWidth=1;
     ctx.stroke();
   }
+}
 
-  ctx.fillStyle = "#ffd45a";
+function ground(){
+  const sky=ctx.createLinearGradient(0,0,0,size.h);
+  sky.addColorStop(0,'#8fc2ce');
+  sky.addColorStop(.5,'#cbd5aa');
+  sky.addColorStop(1,'#79a66f');
+
+  ctx.fillStyle=sky;
+  ctx.fillRect(0,0,size.w,size.h);
+
+  // Все клетки используют общие координаты сетки.
+  // Небольшое перекрытие убирает щели при вращении.
+  for(let y=0;y<rows;y++){
+    for(let x=0;x<cols;x++){
+      const p=[
+        project(x,y),
+        project(x+1,y),
+        project(x+1,y+1),
+        project(x,y+1)
+      ];
+
+      poly(
+        p,
+        (x+y)%2?'#7da568':'#759e60',
+        null
+      );
+    }
+  }
+
+  // Рисуем только внешний контур земли.
+  const edge=[
+    project(0,0),
+    project(cols,0),
+    project(cols,rows),
+    project(0,rows),
+    project(0,0)
+  ];
+
   ctx.beginPath();
-  ctx.arc(525,45,24,0,Math.PI*2);
+  edge.forEach((p,i)=>{
+    i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y);
+  });
+
+  ctx.strokeStyle='#e0dfb8';
+  ctx.lineWidth=3;
+  ctx.stroke();
+}
+
+function drawPanel(x,y){
+  const p=project(x+.5,y+.5);
+  const w=23,h=14;
+
+  ctx.strokeStyle='#c6c9c0';
+  ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.moveTo(p.x-9,p.y+5);
+  ctx.lineTo(p.x-11,p.y+14);
+  ctx.moveTo(p.x+9,p.y+5);
+  ctx.lineTo(p.x+11,p.y+14);
+  ctx.stroke();
+
+  poly([
+    {x:p.x-w,y:p.y-4},
+    {x:p.x,y:p.y-h-4},
+    {x:p.x+w,y:p.y-4},
+    {x:p.x,y:p.y+h-4}
+  ],'#173d5a','#d4e3e7');
+}
+
+function drawObject(o){
+  const p=project(o.x+.5,o.y+.5);
+
+  if(o.type==='panel'){
+    drawPanel(o.x,o.y);
+    return;
+  }
+
+  const w=o.type==='transformer'?18:14;
+  const d=o.type==='transformer'?15:12;
+  const h=o.type==='transformer'?16:11;
+
+  const col=
+    o.type==='battery'?'#39865d':
+    o.type==='inverter'?'#aebfc2':'#929fa2';
+
+  poly([
+    {x:p.x-w,y:p.y},
+    {x:p.x,y:p.y-d},
+    {x:p.x+w,y:p.y},
+    {x:p.x,y:p.y+d}
+  ],col,'#e4e7d9');
+
+  poly([
+    {x:p.x-w,y:p.y},
+    {x:p.x,y:p.y+d},
+    {x:p.x,y:p.y+d+h},
+    {x:p.x-w,y:p.y+h}
+  ],col,'#dce3d8');
+
+  poly([
+    {x:p.x,y:p.y+d},
+    {x:p.x+w,y:p.y},
+    {x:p.x+w,y:p.y+h},
+    {x:p.x,y:p.y+d+h}
+  ],col,'#dce3d8');
+
+  ctx.fillStyle='#20383c';
+  ctx.font='bold 9px Arial';
+  ctx.textAlign='center';
+  ctx.fillText(
+    o.type==='battery'?'10':
+    o.type==='inverter'?'INV':'⚡',
+    p.x,p.y+6
+  );
+}
+
+function draw(){
+  if(!size.w||!size.h)return;
+
+  ctx.clearRect(0,0,size.w,size.h);
+  ground();
+
+  [...items]
+    .sort((a,b)=>(a.x+a.y)-(b.x+b.y))
+    .forEach(drawObject);
+
+  const sunX=size.w-36,sunY=48;
+  ctx.fillStyle='#ffe58a';
+  ctx.beginPath();
+  ctx.arc(sunX,sunY,17,0,Math.PI*2);
   ctx.fill();
 }
 
-document.getElementById("buyPanel").onclick =
-  () => buy("panels",2500);
-document.getElementById("buyInverter").onclick =
-  () => buy("inverters",8000);
-document.getElementById("buyBattery").onclick =
-  () => buy("batteries",6500);
-document.getElementById("buyTransformer").onclick =
-  () => buy("transformers",12000);
-document.getElementById("nextDay").onclick = nextDay;
-document.getElementById("sell").onclick = sellEnergy;
+function update(){
+  const panels=items.filter(i=>i.type==='panel').length;
+  const power=panels*.55;
 
+  $('money').textContent='₴ '+Math.floor(cash).toLocaleString('ru-RU');
+  $('power').textContent=power.toFixed(2)+' кВт';
+  $('energy').textContent=totalEnergy.toFixed(1)+' кВт·ч';
+  $('income').textContent='₴ '+Math.floor(earned).toLocaleString('ru-RU');
+
+  $('site').textContent=
+    'Участок '+Math.ceil(cols*rows/63)+' · '+items.length+' объектов';
+
+  $('weather').textContent=
+    (weather==='sun'?'☀️ Ясно':
+     weather==='cloud'?'☁️ Облачно':'🌧️ Дождь')+
+    ' · День '+day;
+
+  $('sell').disabled=energy<=0;
+
+  draw();
+  save();
+}
+
+function say(t){
+  $('log').textContent=t;
+}
+
+function screenToGrid(px,py){
+  const dx=(px-size.w/2-cam.x)/cam.zoom;
+  const dy=(py-size.h*.51-cam.y)/cam.zoom;
+
+  const c=Math.cos(cam.angle);
+  const s=Math.sin(cam.angle);
+
+  const rx=dx*c+dy*s;
+  const ry=-dx*s+dy*c;
+
+  const gx=rx/tw+ry/th;
+  const gy=ry/th-rx/tw;
+
+  const x=Math.floor(gx);
+  const y=Math.floor(gy);
+
+  return x>=0&&x<cols&&y>=0&&y<rows?{x,y}:null;
+}
+
+function placeAt(px,py){
+  const cell=screenToGrid(px,py);
+  if(!cell)return;
+
+  if(items.some(o=>o.x===cell.x&&o.y===cell.y)){
+    say('Это место уже занято.');
+    return;
+  }
+
+  const cost=costs[selected];
+
+  if(cash<cost){
+    say('Недостаточно средств для покупки '+names[selected]+'.');
+    return;
+  }
+
+  cash-=cost;
+  items.push({...cell,type:selected});
+
+  say(names[selected]+' установлено.');
+  update();
+}
+
+// Управление касаниями и камерой.
+canvas.addEventListener('pointerdown',e=>{
+  canvas.setPointerCapture(e.pointerId);
+
+  pointers.set(e.pointerId,{
+    x:e.clientX,
+    y:e.clientY
+  });
+
+  if(pointers.size===1){
+    gesture={
+      kind:'tap',
+      startX:e.clientX,
+      startY:e.clientY,
+      moved:false
+    };
+  }else if(pointers.size===2){
+    const a=[...pointers.values()];
+
+    gesture={
+      kind:'multi',
+      dist:Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y),
+      angle:Math.atan2(a[1].y-a[0].y,a[1].x-a[0].x)
+    };
+  }
+});
+
+canvas.addEventListener('pointermove',e=>{
+  if(!pointers.has(e.pointerId))return;
+
+  const prev=pointers.get(e.pointerId);
+
+  pointers.set(e.pointerId,{
+    x:e.clientX,
+    y:e.clientY
+  });
+
+  if(pointers.size===1&&gesture){
+    const dx=e.clientX-prev.x;
+    const dy=e.clientY-prev.y;
+
+    if(
+      Math.abs(e.clientX-gesture.startX)+
+      Math.abs(e.clientY-gesture.startY)>7
+    ){
+      gesture.moved=true;
+    }
+
+    cam.x+=dx;
+    cam.y+=dy;
+    draw();
+
+  }else if(pointers.size===2&&gesture?.kind==='multi'){
+    const a=[...pointers.values()];
+
+    const dist=Math.hypot(
+      a[0].x-a[1].x,
+      a[0].y-a[1].y
+    );
+
+    const ang=Math.atan2(
+      a[1].y-a[0].y,
+      a[1].x-a[0].x
+    );
+
+    if(gesture.dist>0){
+      cam.zoom=Math.max(
+        .55,
+        Math.min(1.8,cam.zoom*dist/gesture.dist)
+      );
+    }
+
+    cam.angle+=ang-gesture.angle;
+
+    gesture.dist=dist;
+    gesture.angle=ang;
+
+    draw();
+  }
+});
+
+function pointerEnd(e){
+  const g=gesture;
+
+  if(pointers.has(e.pointerId)){
+    pointers.delete(e.pointerId);
+  }
+
+  if(pointers.size===0){
+    if(g?.kind==='tap'&&!g.moved){
+      const r=canvas.getBoundingClientRect();
+
+      placeAt(
+        e.clientX-r.left,
+        e.clientY-r.top
+      );
+    }
+
+    gesture=null;
+
+  }else if(pointers.size===1){
+    const p=[...pointers.values()][0];
+
+    gesture={
+      kind:'tap',
+      startX:p.x,
+      startY:p.y,
+      moved:true
+    };
+  }
+}
+
+canvas.addEventListener('pointerup',pointerEnd);
+canvas.addEventListener('pointercancel',pointerEnd);
+
+// Управление масштабом и вращением.
+$('zoomIn').onclick=()=>{
+  cam.zoom=Math.min(1.8,cam.zoom*1.15);
+  draw();
+};
+
+$('zoomOut').onclick=()=>{
+  cam.zoom=Math.max(.55,cam.zoom/1.15);
+  draw();
+};
+
+$('rotate').onclick=()=>{
+  cam.angle+=Math.PI/12;
+  draw();
+};
+
+// Выбор оборудования.
+document.querySelectorAll('.tool').forEach(b=>{
+  b.onclick=()=>{
+    selected=b.dataset.type;
+
+    document.querySelectorAll('.tool').forEach(x=>{
+      x.classList.toggle('active',x===b);
+    });
+
+    $('hint').textContent=
+      'Выбрано: '+names[selected]+'. Нажми на свободную клетку.';
+  };
+});
+
+// Продажа электроэнергии.
+$('sell').onclick=()=>{
+  if(energy<=0)return;
+
+  const revenue=energy*8;
+  cash+=revenue;
+  earned+=revenue;
+
+  const sold=energy;
+  energy=0;
+
+  say(
+    'Продано '+sold.toFixed(1)+
+    ' кВт·ч за ₴ '+revenue.toFixed(0)+'.'
+  );
+
+  update();
+};
+
+// Новый игровой день.
+$('nextday').onclick=()=>{
+  day++;
+
+  weather=['sun','sun','cloud','sun','rain'][
+    Math.floor(Math.random()*5)
+  ];
+
+  const panels=items.filter(i=>i.type==='panel').length;
+
+  const ready=
+    items.some(i=>i.type==='inverter')&&
+    items.some(i=>i.type==='transformer');
+
+  const factor=
+    weather==='sun'?4.5:
+    weather==='cloud'?2.5:1.2;
+
+  const produced=ready?panels*.55*factor:0;
+
+  energy+=produced;
+  totalEnergy+=produced;
+
+  say(
+    ready?
+    'День '+day+': произведено '+produced.toFixed(1)+' кВт·ч.':
+    'Для выработки нужны панели, инвертор и трансформатор.'
+  );
+
+  update();
+};
+
+// Покупка дополнительной земли.
+$('expand').onclick=()=>{
+  if(cash<10000){
+    say('Для расширения нужно ₴10 000.');
+    return;
+  }
+
+  cash-=10000;
+  cols+=2;
+  rows+=2;
+
+  say('Территория расширена! Теперь участок больше.');
+  update();
+};
+
+load();
+
+if(items.length===0){
+  cam.zoom=.92;
+}
+
+const ro=new ResizeObserver(resize);
+ro.observe(canvas.parentElement);
+
+resize();
 update();
-loadGame();
+
+})();
 </script>
 </body>
 </html>
