@@ -57,8 +57,6 @@ button:disabled{opacity:.45}
 }
 .arena{position:relative;width:100%;height:365px;margin:0 auto}
 
-/* Круг в центре стола удалён */
-
 .bottle-wrap{
  position:absolute;left:50%;top:48%;width:80px;height:80px;
  transform:translate(-50%,-50%);z-index:2;display:grid;place-items:center
@@ -259,13 +257,13 @@ function avatarContent(container,player){
  }
 }
 
-/* Аватарки расположены ближе к краям стола */
+/* Аватарки ближе к краям стола */
 function basePosition(index,total){
  const angle=(-90+(360/Math.max(total,1))*index)*Math.PI/180;
 
  return {
-  x:50+41*Math.cos(angle),
-  y:50+39*Math.sin(angle)
+  x:50+46*Math.cos(angle),
+  y:50+44*Math.sin(angle)
  };
 }
 
