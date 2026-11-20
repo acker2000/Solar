@@ -1,1 +1,268 @@
-Solar Tycoon — solar_tycoon_prototype.html. Замени содержимое файла auto-kiss-clicker-index.html в GitHub на содержимое скачанного HTML-файла.
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Solar Tycoon</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#101a24;color:white;
+ font-family:Arial,sans-serif;padding:15px;
+}
+header{text-align:center;margin-bottom:18px}
+h1{margin:8px 0;color:#ffd45b}
+.subtitle{color:#aab8c5;font-size:13px}
+.stats{
+ display:grid;grid-template-columns:1fr 1fr;
+ gap:9px;margin-bottom:15px;
+}
+.stat{
+ background:#1d2b38;padding:13px;border-radius:12px;
+}
+.stat small{color:#9eafbd}
+.stat strong{display:block;font-size:20px;margin-top:5px}
+#field{
+ width:100%;height:290px;background:#263b32;
+ border:2px solid #526b56;border-radius:15px;
+ display:block;
+}
+.section-title{margin:20px 0 10px;font-size:18px}
+.shop{
+ display:grid;grid-template-columns:1fr 1fr;gap:9px;
+}
+.item{
+ background:#1d2b38;border-radius:12px;padding:12px;
+}
+.item b{display:block;margin-bottom:6px}
+.item small{color:#aab8c5;display:block;margin-bottom:10px}
+button{
+ border:0;border-radius:9px;padding:11px;
+ background:#f4bd45;color:#17202a;
+ font-weight:bold;width:100%;font-size:14px;
+}
+button:active{transform:scale(.97)}
+button:disabled{opacity:.4}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+#message{
+ margin-top:13px;background:#1d2b38;
+ padding:12px;border-radius:10px;color:#d5e2ec;
+ min-height:42px;font-size:14px;
+}
+footer{text-align:center;color:#81909d;font-size:11px;margin:20px 0}
+</style>
+</head>
+<body>
+
+<header>
+<h1>☀️ SOLAR TYCOON</h1>
+<div class="subtitle">Построй свою солнечную электростанцию</div>
+</header>
+
+<div class="stats">
+ <div class="stat"><small>💰 Деньги</small><strong id="money">25 000 ₴</strong></div>
+ <div class="stat"><small>⚡ Мощность</small><strong id="power">0 кВт</strong></div>
+ <div class="stat"><small>🔋 Выработка</small><strong id="energy">0 кВт·ч</strong></div>
+ <div class="stat"><small>📈 Доход всего</small><strong id="income">0 ₴</strong></div>
+</div>
+
+<h3 class="section-title">🏗️ Моя электростанция</h3>
+<canvas id="field"></canvas>
+
+<div class="actions">
+ <button onclick="nextDay()">🌞 Следующий день</button>
+ <button onclick="sellEnergy()">⚡ Продать энергию</button>
+</div>
+
+<h3 class="section-title">🛒 Магазин оборудования</h3>
+<div class="shop">
+ <div class="item">
+  <b>☀️ Солнечная панель</b>
+  <small>550 Вт · 2 500 ₴</small>
+  <button onclick="buy('panel')">Купить</button>
+ </div>
+ <div class="item">
+  <b>🔌 Инвертор</b>
+  <small>Для преобразования тока · 8 000 ₴</small>
+  <button onclick="buy('inverter')">Купить</button>
+ </div>
+ <div class="item">
+  <b>🔋 Аккумулятор</b>
+  <small>10 кВт·ч · 6 500 ₴</small>
+  <button onclick="buy('battery')">Купить</button>
+ </div>
+ <div class="item">
+  <b>⚡ Трансформатор</b>
+  <small>Подключение к сети · 12 000 ₴</small>
+  <button onclick="buy('transformer')">Купить</button>
+ </div>
+</div>
+
+<div id="message">Добро пожаловать! Начни строительство своей солнечной станции.</div>
+<footer>Solar Tycoon · Прототип игры</footer>
+
+<script>
+const tg = window.Telegram?.WebApp;
+if(tg){tg.ready();tg.expand();}
+
+let money=25000;
+let panels=0;
+let inverters=0;
+let batteries=0;
+let transformers=0;
+let energy=0;
+let totalIncome=0;
+let day=1;
+let weather="sun";
+
+const prices={
+ panel:2500,
+ inverter:8000,
+ battery:6500,
+ transformer:12000
+};
+
+function say(text){
+ document.getElementById("message").textContent=text;
+}
+
+function format(n){
+ return Math.floor(n).toLocaleString("ru-RU");
+}
+
+function update(){
+ document.getElementById("money").textContent=format(money)+" ₴";
+ document.getElementById("power").textContent=(panels*0.55).toFixed(2)+" кВт";
+ document.getElementById("energy").textContent=energy.toFixed(1)+" кВт·ч";
+ document.getElementById("income").textContent=format(totalIncome)+" ₴";
+ draw();
+}
+
+function buy(type){
+ if(money<prices[type]){
+  say("Недостаточно денег для покупки!");
+  return;
+ }
+ money-=prices[type];
+ if(type==="panel")panels++;
+ if(type==="inverter")inverters++;
+ if(type==="battery")batteries++;
+ if(type==="transformer")transformers++;
+ say("Оборудование куплено и установлено на станции!");
+ update();
+}
+
+function nextDay(){
+ day++;
+ const weatherTypes=["sun","cloud","rain"];
+ weather=weatherTypes[Math.floor(Math.random()*3)];
+ let production=0;
+ if(panels>0 && inverters>0 && transformers>0){
+  let factor=weather==="sun"?5:weather==="cloud"?2.5:1;
+  production=panels*0.55*factor;
+  energy+=production;
+ }
+ let weatherName=weather==="sun"?"☀️ Солнечно":weather==="cloud"?"☁️ Облачно":"🌧️ Дождь";
+ say("День "+day+". "+weatherName+". Выработка: "+production.toFixed(1)+" кВт·ч.");
+ update();
+}
+
+function sellEnergy(){
+ if(energy<=0){
+  say("Пока нечего продавать. Построй станцию и дождись выработки!");
+  return;
+ }
+ if(panels===0||inverters===0||transformers===0){
+  say("Для продажи электричества нужны панели, инвертор и трансформатор.");
+  return;
+ }
+ let payment=energy*8;
+ money+=payment;
+ totalIncome+=payment;
+ energy=0;
+ say("Энергия продана! Получено "+format(payment)+" ₴.");
+ update();
+}
+
+const canvas=document.getElementById("field");
+const ctx=canvas.getContext("2d");
+
+function draw(){
+ const w=canvas.width=canvas.clientWidth*devicePixelRatio;
+ const h=canvas.height=canvas.clientHeight*devicePixelRatio;
+ ctx.scale(devicePixelRatio,devicePixelRatio);
+ const cw=canvas.clientWidth,ch=canvas.clientHeight;
+ ctx.fillStyle="#304a38";
+ ctx.fillRect(0,0,cw,ch);
+
+ // Изометрическая площадка
+ const ox=cw/2,oy=35,tw=37,th=20;
+ function point(x,y){
+  return {x:ox+(x-y)*tw/2,y:oy+(x+y)*th/2};
+ }
+ for(let y=0;y<7;y++){
+  for(let x=0;x<8;x++){
+   let p=point(x,y);
+   ctx.beginPath();
+   ctx.moveTo(p.x,p.y);
+   ctx.lineTo(p.x+tw/2,p.y+th/2);
+   ctx.lineTo(p.x,p.y+th);
+   ctx.lineTo(p.x-tw/2,p.y+th/2);
+   ctx.closePath();
+   ctx.fillStyle=(x+y)%2?"#456b45":"#3c6040";
+   ctx.fill();
+   ctx.strokeStyle="#587452";
+   ctx.stroke();
+  }
+ }
+ // Панели
+ let count=Math.min(panels,12);
+ for(let i=0;i<count;i++){
+  let x=i%4+1,y=Math.floor(i/4)+1;
+  let p=point(x,y);
+  ctx.beginPath();
+  ctx.moveTo(p.x,p.y-9);
+  ctx.lineTo(p.x+15,p.y-2);
+  ctx.lineTo(p.x,p.y+5);
+  ctx.lineTo(p.x-15,p.y-2);
+  ctx.closePath();
+  ctx.fillStyle="#174c91";
+  ctx.fill();
+  ctx.strokeStyle="#8dc6ff";
+  ctx.stroke();
+ }
+ // Инвертор
+ if(inverters){
+  let p=point(6,1);
+  ctx.fillStyle="#d5dce2";
+  ctx.fillRect(p.x-9,p.y-12,18,18);
+  ctx.fillStyle="#17232c";
+  ctx.font="9px Arial";
+  ctx.fillText("INV",p.x-8,p.y);
+ }
+ // Батарея
+ if(batteries){
+  let p=point(6,3);
+  ctx.fillStyle="#d5a72e";
+  ctx.fillRect(p.x-9,p.y-13,18,19);
+  ctx.fillStyle="#fff";
+  ctx.font="10px Arial";
+  ctx.fillText("B",p.x-3,p.y);
+ }
+ // Трансформатор
+ if(transformers){
+  let p=point(6,5);
+  ctx.fillStyle="#777f88";
+  ctx.fillRect(p.x-11,p.y-12,22,18);
+  ctx.fillStyle="#fff";
+  ctx.font="8px Arial";
+  ctx.fillText("⚡",p.x-5,p.y);
+ }
+}
+window.addEventListener("resize",draw);
+update();
+</script>
+</body>
+</html>
