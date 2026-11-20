@@ -19,10 +19,10 @@ body{margin:0;background:#101820;color:white;font-family:Arial;overflow:hidden}
 .stat{
  background:#142b35ed;border:1px solid #42606a;
  border-radius:8px;padding:6px 4px;
- font-size:9px;text-align:center;
+ font-size:8px;text-align:center;
  min-width:0;box-shadow:0 3px 10px #0004
 }
-.stat .symbol{font-size:12px;display:block;margin-bottom:2px}
+.stat .symbol{font-size:10px;display:block;margin-bottom:2px}
 .stat b{
  display:block;font-size:12px;color:#7fffc0;
  margin-top:3px;white-space:nowrap
@@ -68,15 +68,15 @@ button b{display:block;color:#7fffc0;margin-top:4px}
 <div id="ui">
  <div class="top">
   <div class="stat">
-   <span class="symbol">📅</span>ДЕНЬ
-   <b id="day">1</b>
+   <span class="symbol">📅</span>ДАТА (КИЕВ)
+   <b id="gameDate">20 ноя 2026</b>
   </div>
   <div class="stat">
    <span class="symbol">💰</span>БАЛАНС
    <b id="money">₴100 000</b>
   </div>
   <div class="stat">
-   <span class="symbol">☀️</span>УСТАНОВЛЕНО
+   <span class="symbol">☀️</span>ОБЩАЯ МОЩНОСТЬ
    <b id="installed">0.00 кВт</b>
   </div>
   <div class="stat">
@@ -87,6 +87,7 @@ button b{display:block;color:#7fffc0;margin-top:4px}
 
  <div id="panel">
   🕒 Киев: <span id="clock">00:00</span><br>
+  📅 Игровой день: <span id="day">1</span><br>
   🌤 Погода: <span id="weather">Ясно</span><br>
   🔋 Панели: <span id="dcPower">0.00 кВт</span><br>
   ⚡ После инвертора: <span id="acPower">0.00 кВт</span><br>
@@ -832,8 +833,13 @@ function processTime(){
 /* ОБНОВЛЕНИЕ ИНТЕРФЕЙСА */
 
 function updateUI(){
- const live=getSolarOutput(Date.now());
+ const now=Date.now();
+ const kyiv=kyivParts(now);
+ const monthNames=["янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"];
+ const live=getSolarOutput(now);
 
+ document.getElementById("gameDate").textContent=
+  kyiv.day+" "+monthNames[kyiv.month-1]+" "+kyiv.year;
  document.getElementById("day").textContent=state.day;
 
  document.getElementById("money").textContent=
