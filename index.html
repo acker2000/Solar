@@ -7,112 +7,382 @@
 <title>Бутылочка 🍾</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 *{box-sizing:border-box}
-body{margin:0;padding:20px 15px;background:#171322;color:white;font-family:Arial,sans-serif;text-align:center}
-main{max-width:450px;margin:auto}
-h1{color:#ff75b5;font-size:30px}
-.card{background:#292139;padding:20px;border-radius:20px;margin-top:18px}
-input{width:100%;padding:14px;border-radius:10px;border:1px solid #65516f;background:#171322;color:white;font-size:17px;margin:7px 0}
-button{width:100%;padding:15px;margin-top:12px;border:0;border-radius:12px;background:#ff75b5;color:#291326;font-size:17px;font-weight:bold}
+
+body{
+ margin:0;
+ padding:12px 8px;
+ background:#9b602e;
+ color:white;
+ font-family:Arial,sans-serif;
+ text-align:center;
+}
+
+main{max-width:520px;margin:auto}
+
+h1{font-size:26px;margin:8px;text-shadow:0 2px 4px #633315}
+
+.card{
+ background:#c58243;
+ padding:12px;
+ border-radius:15px;
+ margin-top:12px;
+ border:1px solid #e8b77b;
+ box-shadow:0 5px 15px #542d16;
+}
+
+input{
+ width:100%;
+ padding:14px;
+ border-radius:10px;
+ border:1px solid #9c6739;
+ background:#fff3df;
+ color:#392313;
+ font-size:17px;
+ margin:7px 0;
+}
+
+button{
+ width:100%;
+ padding:14px;
+ margin-top:10px;
+ border:0;
+ border-radius:12px;
+ background:#f0a13e;
+ color:#40200e;
+ font-size:17px;
+ font-weight:bold;
+}
+
 button:disabled{opacity:.45}
-.secondary{background:#51415f;color:white}
+.secondary{background:#79502d;color:white}
 .hidden{display:none!important}
-.roomcode{font-size:30px;color:#ff91c1;letter-spacing:5px}
-.players{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:15px 0}
-.player{background:#493654;padding:9px 13px;border-radius:20px}
-.arena{height:190px;display:grid;place-items:center}
-.bottle{font-size:105px;display:inline-block}
-.spin{animation:spin 2.2s cubic-bezier(.12,.72,.2,1)}
-@keyframes spin{to{transform:rotate(1440deg)}}
-.result{font-size:21px;color:#ff91c1;min-height:30px;font-weight:bold}
-.status{font-size:13px;color:#c5b4d1;margin-top:12px}
-.small{font-size:13px;color:#c5b4d1}
-.duel{background:#382744;border-radius:18px;padding:16px;margin-top:12px}
-.duel-title{color:#ff91c1;font-size:19px;font-weight:bold}
-.duel-players{display:flex;align-items:center;justify-content:space-around;gap:8px;margin:20px 0}
-.duel-person{flex:1;min-width:0;background:#493654;padding:15px 5px;border-radius:14px}
-.duel-name{font-size:18px;font-weight:bold;overflow-wrap:anywhere}
-.heart{font-size:27px}
-.duel-buttons{display:flex;gap:10px}
-.duel-buttons button{flex:1;margin-top:8px;padding:14px 5px;color:white}
-.no{background:#d94355}
-.yes{background:#20a66a}
-.timer{font-size:24px;color:#ffd477;font-weight:bold;margin:10px}
-.choice-status{font-size:14px;color:#d8c9e2;min-height:20px}
+
+.roomcode{
+ font-size:23px;
+ color:#fff0ce;
+ letter-spacing:4px;
+}
+
+.table-tools{
+ display:flex;
+ justify-content:space-around;
+ align-items:center;
+ padding:8px 0 12px;
+ border-bottom:1px solid #ffffff55;
+}
+
+.tool{font-size:21px}
+.tool small{
+ display:block;
+ font-size:10px;
+ margin-top:3px;
+}
+
+.table-board{
+ padding:10px;
+ border-radius:12px;
+ background:
+ repeating-linear-gradient(
+  2deg,
+  transparent 0px,
+  transparent 22px,
+  #75421d22 24px,
+  #f2c08033 27px,
+  transparent 32px
+ ),
+ linear-gradient(110deg,#d99b5e,#b97138,#d99b5e);
+ box-shadow:inset 0 0 18px #75401c66;
+}
+
+.table-info{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ font-size:12px;
+ color:#fff0d5;
+}
+
+.players{
+ display:grid;
+ grid-template-columns:repeat(3,minmax(0,1fr));
+ gap:10px;
+ margin:15px 0;
+}
+
+.player{
+ min-width:0;
+ background:linear-gradient(145deg,#674027,#38251b);
+ padding:7px 4px;
+ border-radius:12px;
+ border:2px solid #d9a46d;
+ box-shadow:0 3px 8px #542c15;
+ overflow-wrap:anywhere;
+}
+
+.player-avatar{
+ width:62px;
+ height:62px;
+ margin:auto;
+ border-radius:11px;
+ display:grid;
+ place-items:center;
+ background:linear-gradient(145deg,#f0d1a4,#a86b38);
+ color:#563116;
+ font-size:27px;
+ font-weight:bold;
+ border:2px solid #f5d9ad;
+}
+
+.player-name{
+ font-size:12px;
+ margin-top:5px;
+}
+
+.player-meta{
+ font-size:11px;
+ color:#ffe1ae;
+ margin-top:3px;
+}
+
+.arena{
+ height:205px;
+ display:grid;
+ place-items:center;
+ position:relative;
+ background:radial-gradient(ellipse,#f9d69b55,transparent 65%);
+}
+
+.arena:before{
+ content:"✿";
+ position:absolute;
+ font-size:165px;
+ color:#f4c27b55;
+}
+
+.bottle{
+ position:relative;
+ z-index:1;
+ font-size:105px;
+ display:inline-block;
+ transform:rotate(-35deg);
+ filter:drop-shadow(0 5px 5px #57300f88);
+}
+
+.spin{
+ animation:spin 2.2s cubic-bezier(.12,.72,.2,1);
+}
+
+@keyframes spin{
+ to{transform:rotate(1405deg)}
+}
+
+.result{
+ font-size:19px;
+ min-height:30px;
+ font-weight:bold;
+ color:#fff3d7;
+ text-shadow:0 2px 3px #75401c;
+}
+
+.status{
+ font-size:13px;
+ color:#fff0d9;
+ margin-top:12px;
+}
+
+.small{
+ font-size:13px;
+ color:#fff0d9;
+}
+
+.duel{
+ background:linear-gradient(145deg,#794a2b,#492b1c);
+ border:2px solid #e5b77c;
+ border-radius:15px;
+ padding:12px;
+ margin-top:12px;
+}
+
+.duel-title{
+ color:#ffe2ad;
+ font-size:20px;
+ font-weight:bold;
+}
+
+.duel-players{
+ display:flex;
+ align-items:center;
+ justify-content:space-around;
+ gap:8px;
+ margin:15px 0;
+}
+
+.duel-person{
+ flex:1;
+ min-width:0;
+ background:#30231c;
+ padding:12px 5px;
+ border-radius:12px;
+ border:1px solid #dba96c;
+}
+
+.duel-name{
+ font-size:16px;
+ font-weight:bold;
+ overflow-wrap:anywhere;
+}
+
+.heart{font-size:29px}
+
+.duel-buttons{
+ display:flex;
+ gap:10px;
+}
+
+.duel-buttons button{
+ flex:1;
+ color:white;
+ padding:14px 5px;
+}
+
+.no{background:#d94335}
+.yes{background:#83bd3e}
+
+.timer{
+ font-size:25px;
+ color:#ffe18a;
+ font-weight:bold;
+ margin:8px;
+}
+
+.choice-status{
+ font-size:13px;
+ color:#f7dfc2;
+ min-height:20px;
+}
+
+@media(max-width:360px){
+ .players{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .player-avatar{width:52px;height:52px}
+}
 </style>
 </head>
+
 <body>
 <main>
+
 <h1>🍾 Бутылочка</h1>
-<p class="small">Играйте вместе — до 12 человек!</p>
+<p class="small">Знакомься, общайся и играй!</p>
 
 <section class="card" id="entry">
-<input id="nickname" maxlength="20" placeholder="Твоё имя">
-<button id="create">Создать комнату</button>
-<p>Или введи код комнаты:</p>
-<input id="roomInput" maxlength="6" placeholder="КОД КОМНАТЫ">
-<button class="secondary" id="join">Присоединиться</button>
+ <input id="nickname" maxlength="20" placeholder="Твоё имя">
+ <button id="create">Создать комнату</button>
+ <p>Или введи код комнаты:</p>
+ <input id="roomInput" maxlength="6" placeholder="КОД КОМНАТЫ">
+ <button class="secondary" id="join">Присоединиться</button>
 </section>
 
 <section class="card hidden" id="game">
-<p class="small">КОД КОМНАТЫ</p>
-<div class="roomcode" id="roomCode"></div>
-<button class="secondary" id="copy">Скопировать код</button>
-<p id="count">Игроки: 0/12</p>
+
+<div class="table-tools">
+ <div class="tool">💗<small>Поцелуи</small></div>
+ <div class="tool">🎁<small>Подарки</small></div>
+ <div class="tool">🎡<small>Игры</small></div>
+ <div class="tool">🏆<small>Топ</small></div>
+ <div class="tool">☰<small>Меню</small></div>
+ <div class="tool">⚙️<small>Настройки</small></div>
+</div>
+
+<div class="table-board">
+
+<div class="table-info">
+ <span id="count">Игроки: 0/12</span>
+ <span>СТОЛ · <span id="roomCode"></span></span>
+</div>
+
+<button class="secondary" id="copy">Скопировать код комнаты</button>
+
+<div class="arena">
+ <div class="bottle" id="bottle">🍾</div>
+</div>
+
+<div class="result" id="result">Крути бутылочку!</div>
+
 <div class="players" id="players"></div>
-<div class="arena"><div class="bottle" id="bottle">🍾</div></div>
-<div class="result" id="result">Ждём игроков!</div>
 
 <section class="duel hidden" id="duel">
-<div class="duel-title">💋 Кто кого поцелует?</div>
-<div class="duel-players">
-<div class="duel-person">
-<div class="duel-name" id="pickerName">Игрок 1</div>
-<div class="heart">💋</div>
-<div class="choice-status" id="pickerStatus">Ожидание</div>
-</div>
-<div style="font-size:22px">❤️</div>
-<div class="duel-person">
-<div class="duel-name" id="targetName">Игрок 2</div>
-<div class="heart">💋</div>
-<div class="choice-status" id="targetStatus">Ожидание</div>
-</div>
-</div>
-<div class="timer" id="timer">10</div>
-<div class="small" id="duelHint">Каждый выбирает самостоятельно</div>
-<div class="duel-buttons hidden" id="choiceButtons">
-<button class="no" id="refuse">❌ Отказаться</button>
-<button class="yes" id="kiss">💚 Поцеловать</button>
-</div>
+
+ <div class="duel-title">💋 ТВОЙ ВЫБОР</div>
+
+ <div class="duel-players">
+
+  <div class="duel-person">
+   <div class="duel-name" id="pickerName">Игрок 1</div>
+   <div class="heart">💋</div>
+   <div class="choice-status" id="pickerStatus">Ожидание</div>
+  </div>
+
+  <div style="font-size:25px">❤️</div>
+
+  <div class="duel-person">
+   <div class="duel-name" id="targetName">Игрок 2</div>
+   <div class="heart">💋</div>
+   <div class="choice-status" id="targetStatus">Ожидание</div>
+  </div>
+
+ </div>
+
+ <div class="timer" id="timer">10</div>
+ <div class="small" id="duelHint">Каждый выбирает самостоятельно</div>
+
+ <div class="duel-buttons hidden" id="choiceButtons">
+  <button class="no" id="refuse">Отказаться</button>
+  <button class="yes" id="kiss">Поцеловать</button>
+ </div>
+
 </section>
+
+</div>
 
 <button id="spin">🍾 Крутить бутылочку</button>
 <button class="secondary" id="leave">Выйти из комнаты</button>
 <div class="status" id="status">Подключение...</div>
+
 </section>
 </main>
 
 <script>
 const PROJECT_URL="https://nazbercjykxwizvfcjug.supabase.co";
 const KEY="sb_publishable_2KDCJW1uETwld5SOBH5ztQ_oSpqZFuq";
+
 const $=id=>document.getElementById(id);
 
-let db=null,channel=null,room="",myId="",myName="",spinning=false,round=0;
-let activeRound=null,choices={},kissCounts={},resolvedRounds=new Set();
-let scoredChoices=new Set();
+let db=null,channel=null,room="",myId="",myName="";
+let spinning=false,round=0;
+let activeRound=null,choices={},kissCounts={};
+let resolvedRounds=new Set(),scoredChoices=new Set();
 let countdownInterval=null,roundTimeout=null,spinAnimationTimeout=null;
 
 try{
- if(!window.supabase?.createClient)throw new Error("Не загрузилась библиотека Supabase");
  db=window.supabase.createClient(PROJECT_URL,KEY);
-}catch(e){console.error(e);}
+}catch(e){
+ console.error(e);
+}
 
 const tg=window.Telegram?.WebApp;
-tg?.ready();tg?.expand();
-if(tg?.initDataUnsafe?.user?.first_name)$("nickname").value=tg.initDataUnsafe.user.first_name;
+tg?.ready();
+tg?.expand();
 
-function status(message){$("status").textContent=message;}
+if(tg?.initDataUnsafe?.user?.first_name){
+ $("nickname").value=tg.initDataUnsafe.user.first_name;
+}
+
+function status(message){
+ $("status").textContent=message;
+}
 
 function makeCode(){
  const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -123,32 +393,46 @@ function getPlayers(){
  if(!channel)return [];
  const all=[];
  Object.values(channel.presenceState()).forEach(group=>{
-  group.forEach(p=>{if(p.name&&!all.some(x=>x.id===p.id))all.push(p);});
+  group.forEach(p=>{
+   if(p.name&&!all.some(x=>x.id===p.id))all.push(p);
+  });
  });
  return all;
 }
 
 function renderPlayers(){
  const players=getPlayers();
+
  $("count").textContent="Игроки: "+players.length+"/12";
  $("players").innerHTML="";
+
  players.forEach(p=>{
-  const el=document.createElement("span");
+  const el=document.createElement("div");
   el.className="player";
-  el.textContent=p.name+(p.host?" 👑":"")+" 💋 "+(kissCounts[p.id]||0);
+
+  const avatar=document.createElement("div");
+  avatar.className="player-avatar";
+  avatar.textContent=(p.name||"?").charAt(0).toUpperCase();
+
+  const name=document.createElement("div");
+  name.className="player-name";
+  name.textContent=p.name+(p.host?" 👑":"");
+
+  const meta=document.createElement("div");
+  meta.className="player-meta";
+  meta.textContent="💋 "+(kissCounts[p.id]||0);
+
+  el.append(avatar,name,meta);
   $("players").appendChild(el);
  });
-
 }
 
-// Начисляет поцелуй сразу тому, кого выбрали для поцелуя.
-// Один выбор одного игрока в одном раунде учитывается только один раз.
 function scoreKissChoice(roundId,playerId,choice){
  if(choice!==true||!activeRound||activeRound.roundId!==roundId)return;
 
- const choiceKey=roundId+":"+playerId;
- if(scoredChoices.has(choiceKey))return;
- scoredChoices.add(choiceKey);
+ const key=roundId+":"+playerId;
+ if(scoredChoices.has(key))return;
+ scoredChoices.add(key);
 
  let receiverId=null;
 
@@ -168,17 +452,19 @@ function clearRoundTimers(){
  if(countdownInterval)clearInterval(countdownInterval);
  if(roundTimeout)clearTimeout(roundTimeout);
  if(spinAnimationTimeout)clearTimeout(spinAnimationTimeout);
+
  countdownInterval=null;
  roundTimeout=null;
  spinAnimationTimeout=null;
 }
 
 async function enterRoom(code,isHost){
- if(!db)throw new Error("Supabase не подключён. Обнови страницу.");
+ if(!db)throw new Error("Supabase не подключён.");
 
  myName=$("nickname").value.trim()||"Игрок";
  myId=String(tg?.initDataUnsafe?.user?.id||("guest-"+Math.random().toString(36).slice(2)));
  room=code;
+
  kissCounts={};
  choices={};
  activeRound=null;
@@ -188,9 +474,10 @@ async function enterRoom(code,isHost){
  $("entry").classList.add("hidden");
  $("game").classList.remove("hidden");
  $("roomCode").textContent=room;
- $("result").textContent="Ждём игроков!";
+ $("result").textContent="Крути бутылочку!";
  $("duel").classList.add("hidden");
  $("spin").disabled=false;
+
  status("Подключаемся...");
 
  channel=db.channel("bottle-room-"+room,{
@@ -208,8 +495,9 @@ async function enterRoom(code,isHost){
    renderPlayers();
    status("Ты в комнате! Отправь друзьям код.");
   }
+
   if(s==="CHANNEL_ERROR"||s==="TIMED_OUT"){
-   status("Ошибка подключения. Проверь интернет и Supabase.");
+   status("Ошибка подключения. Проверь интернет.");
   }
  });
 }
@@ -231,12 +519,12 @@ function showSpin(data){
  bottle.classList.add("spin");
 
  $("result").textContent="Бутылочка крутится...";
+
  $("pickerName").textContent=data.pickerName;
  $("targetName").textContent=data.targetName;
  $("pickerStatus").textContent="Ожидание";
  $("targetStatus").textContent="Ожидание";
  $("choiceButtons").classList.add("hidden");
- $("duelHint").textContent="Каждый выбирает самостоятельно";
 
  spinAnimationTimeout=setTimeout(()=>{
   if(!activeRound||activeRound.roundId!==data.roundId)return;
@@ -244,6 +532,7 @@ function showSpin(data){
   bottle.classList.remove("spin");
   $("result").textContent="💋 Выбраны два игрока!";
   $("duel").classList.remove("hidden");
+
   spinning=false;
   updateChoiceUI();
   startCountdown(data);
@@ -301,7 +590,7 @@ async function selectChoice(value){
 
  choices[myId]=value;
 
- // Начисление происходит сразу при нажатии, не дожидаясь второго игрока.
+ // Поцелуй начисляется сразу, независимо от ответа второго игрока.
  scoreKissChoice(activeRound.roundId,myId,value);
 
  updateChoiceUI();
@@ -325,8 +614,6 @@ function receiveChoice(data){
  if(!activeRound||!data||data.roundId!==activeRound.roundId)return;
 
  choices[data.playerId]=data.choice;
-
- // На остальных устройствах начисляем тот же поцелуй сразу после получения события.
  scoreKissChoice(data.roundId,data.playerId,data.choice);
 
  updateChoiceUI();
@@ -373,23 +660,17 @@ function applyResult(data){
  clearRoundTimers();
 
  if(data.pickerChoice===true&&data.targetChoice===true){
-  $("result").textContent="💋 Взаимный поцелуй! Оба получили по +1!";
+  $("result").textContent="💋 Взаимный поцелуй!";
  }else if(data.pickerChoice===true&&data.targetChoice===false){
-  $("result").textContent=data.pickerName+" поцеловал(а) "+data.targetName+"! "+data.targetName+" получил(а) +1.";
+  $("result").textContent=data.pickerName+" поцеловал(а) "+data.targetName+"!";
  }else if(data.pickerChoice===false&&data.targetChoice===true){
-  $("result").textContent=data.targetName+" поцеловал(а) "+data.pickerName+"! "+data.pickerName+" получил(а) +1.";
+  $("result").textContent=data.targetName+" поцеловал(а) "+data.pickerName+"!";
  }else if(data.pickerChoice===true){
-  $("result").textContent=data.pickerName+" выбрал(а) поцелуй! "+data.targetName+" получил(а) +1.";
+  $("result").textContent=data.pickerName+" выбрал(а) поцелуй!";
  }else if(data.targetChoice===true){
-  $("result").textContent=data.targetName+" выбрал(а) поцелуй! "+data.pickerName+" получил(а) +1.";
+  $("result").textContent=data.targetName+" выбрал(а) поцелуй!";
  }else if(data.timedOut){
-  const missing=[];
-  if(data.pickerChoice===undefined)missing.push(data.pickerName);
-  if(data.targetChoice===undefined)missing.push(data.targetName);
-
-  $("result").textContent=missing.length
-   ?"⏰ Не ответил: "+missing.join(" и ")
-   :"Время вышло. Поцелуя не будет.";
+  $("result").textContent="⏰ Время вышло!";
  }else if(data.pickerChoice===false&&data.targetChoice===false){
   $("result").textContent="Оба отказались 🙅";
  }else{
@@ -400,6 +681,7 @@ function applyResult(data){
  $("choiceButtons").classList.add("hidden");
  $("timer").textContent="0";
  $("spin").disabled=false;
+
  activeRound=null;
  choices={};
  renderPlayers();
@@ -502,7 +784,7 @@ $("leave").onclick=async()=>{
  $("game").classList.add("hidden");
  $("entry").classList.remove("hidden");
  $("players").innerHTML="";
- $("result").textContent="Ждём игроков!";
+ $("result").textContent="Крути бутылочку!";
  $("duel").classList.add("hidden");
  $("spin").disabled=false;
 
@@ -516,5 +798,6 @@ $("leave").onclick=async()=>{
  spinning=false;
 };
 </script>
+
 </body>
 </html>
