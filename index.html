@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -6,720 +7,326 @@
 <title>Solar Tycoon</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-:root {
-  --bg:#07131b;
-  --panel:#10232d;
-  --panel2:#173440;
-  --line:#294957;
-  --text:#edf8f5;
-  --muted:#91aaa9;
-  --green:#62d69b;
-  --gold:#f6c96b;
-}
-* { box-sizing:border-box; }
-html,body {
-  margin:0; width:100%; height:100%; overflow:hidden;
-  background:var(--bg); color:var(--text);
-  font-family:Arial, sans-serif;
-  overscroll-behavior:none;
-}
-body { display:flex; justify-content:center; }
-#app {
-  width:100%; max-width:620px; height:100dvh;
-  display:flex; flex-direction:column;
-  padding-top:env(safe-area-inset-top);
-  padding-bottom:env(safe-area-inset-bottom);
-  background:linear-gradient(180deg,#0b1d27,#07131b);
-}
-header {
-  padding:13px 16px 10px;
-  display:flex; justify-content:space-between; align-items:center;
-  border-bottom:1px solid #203b47;
-}
-.logo { font-size:18px; font-weight:900; letter-spacing:1.4px; }
-.logo span { color:var(--green); }
-.day {
-  color:var(--muted); font-size:11px; margin-top:4px;
-}
-.money {
-  font-size:19px; font-weight:800; color:var(--gold);
-  white-space:nowrap;
-}
-.stats {
-  display:grid; grid-template-columns:repeat(3,1fr);
-  gap:7px; padding:9px 12px;
-}
-.stat {
-  background:var(--panel); border:1px solid var(--line);
-  border-radius:11px; padding:8px 5px; text-align:center;
-}
-.stat small { display:block; color:var(--muted); font-size:10px; margin-bottom:4px; }
-.stat strong { font-size:14px; }
-#scene {
-  position:relative; flex:1; min-height:180px;
-  margin:0 9px; border:1px solid #29434b;
-  border-radius:15px; overflow:hidden;
-  background:linear-gradient(#8ab5ae 0%,#b0c5a4 45%,#637e56 100%);
-}
-canvas {
-  display:block; width:100%; height:100%;
-  touch-action:none;
-}
-.hint {
-  position:absolute; top:9px; left:10px;
-  color:#f4fff5; font-size:10px;
-  background:#071b20b8; padding:6px 9px;
-  border:1px solid #ffffff30; border-radius:8px;
-  pointer-events:none;
-}
-.weather {
-  position:absolute; top:9px; right:10px;
-  color:#fff; font-size:11px;
-  background:#071b20b8; padding:6px 9px;
-  border-radius:8px; pointer-events:none;
-}
-.camera {
-  position:absolute; right:9px; bottom:9px;
-  display:flex; gap:5px;
-}
-.camera button {
-  width:34px; height:34px; padding:0;
-  font-size:18px; background:#10252dcc;
-  border:1px solid #ffffff44;
-}
-.section-title {
-  color:var(--muted); font-size:10px;
-  letter-spacing:1px; font-weight:bold;
-  padding:10px 13px 6px;
-}
-.tools {
-  display:grid; grid-template-columns:repeat(4,1fr);
-  gap:7px; padding:0 10px;
-}
-.tool {
-  min-width:0; padding:9px 3px 8px;
-  background:var(--panel); color:var(--text);
-  border:1px solid var(--line); border-radius:11px;
-  text-align:center; font-size:11px;
-}
-.tool .emoji { font-size:22px; display:block; margin-bottom:5px; }
-.tool small { display:block; color:var(--gold); font-size:10px; margin-top:4px; }
-.tool.active { border:2px solid var(--green); background:#153b35; }
-.actions {
-  display:grid; grid-template-columns:1fr 1fr 1fr;
-  gap:7px; padding:9px 10px 7px;
-}
-button {
-  color:var(--text); border:1px solid var(--line);
-  border-radius:10px; padding:11px 6px;
-  background:var(--panel2); font-size:11px;
-  font-weight:bold; cursor:pointer;
-  -webkit-tap-highlight-color:transparent;
-}
-button:active { transform:scale(.97); }
-button.primary { background:#176b50; border-color:#319a70; }
-button.gold { background:#57451f; border-color:#9c7836; }
-button:disabled { opacity:.4; }
-footer {
-  padding:5px 12px 9px; text-align:center;
-  color:#78918f; font-size:9px;
-}
-#message {
-  min-height:17px; padding:2px 12px 0;
-  text-align:center; color:var(--green); font-size:11px;
-}
-@media (max-height:700px) {
-  header { padding-top:8px; padding-bottom:7px; }
-  .stats { padding-top:6px; padding-bottom:6px; }
-  .tool { padding:6px 2px; }
-  .tool .emoji { font-size:19px; margin-bottom:3px; }
-  button { padding:9px 4px; }
-}
+:root{--bg:#07131b;--panel:#10232d;--panel2:#173440;--line:#294957;--text:#edf8f5;--muted:#91aaa9;--green:#62d69b;--gold:#f6c96b}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:Arial,sans-serif;overscroll-behavior:none}
+body{display:flex;justify-content:center}
+#app{width:100%;max-width:620px;height:100dvh;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);background:linear-gradient(180deg,#0b1d27,#07131b)}
+header{padding:13px 16px 10px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #203b47}
+.logo{font-size:18px;font-weight:900;letter-spacing:1.4px}
+.logo span{color:var(--green)}
+.day{color:var(--muted);font-size:11px;margin-top:4px}
+.money{font-size:19px;font-weight:800;color:var(--gold);white-space:nowrap}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;padding:9px 12px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:8px 5px;text-align:center}
+.stat small{display:block;color:var(--muted);font-size:10px;margin-bottom:4px}
+.stat strong{font-size:14px}
+#scene{position:relative;flex:1;min-height:180px;margin:0 9px;border:1px solid #29434b;border-radius:15px;overflow:hidden;background:linear-gradient(#8ab5ae 0%,#b0c5a4 45%,#637e56 100%)}
+canvas{display:block;width:100%;height:100%;touch-action:none}
+.hint,.weather{position:absolute;top:9px;color:#fff;font-size:10px;background:#071b20c9;padding:6px 9px;border:1px solid #ffffff30;border-radius:8px;pointer-events:none}
+.hint{left:10px}.weather{right:10px;font-size:11px}
+.camera{position:absolute;right:9px;bottom:9px;display:flex;gap:5px}
+.camera button{width:34px;height:34px;padding:0;font-size:18px;background:#10252dcc;border:1px solid #ffffff44}
+.section-title{color:var(--muted);font-size:10px;letter-spacing:1px;font-weight:bold;padding:10px 13px 6px}
+.tools{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;padding:0 10px}
+.tool{min-width:0;padding:9px 3px 8px;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:11px;text-align:center;font-size:11px}
+.tool .emoji{font-size:22px;display:block;margin-bottom:5px}
+.tool small{display:block;color:var(--gold);font-size:10px;margin-top:4px}
+.tool.active{border:2px solid var(--green);background:#153b35}
+.actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;padding:9px 10px 7px}
+button{color:var(--text);border:1px solid var(--line);border-radius:10px;padding:11px 6px;background:var(--panel2);font-size:11px;font-weight:bold;cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:active{transform:scale(.97)}
+button.primary{background:#176b50;border-color:#319a70}
+button.gold{background:#57451f;border-color:#9c7836}
+button:disabled{opacity:.4}
+footer{padding:5px 12px 9px;text-align:center;color:#78918f;font-size:9px}
+#message{min-height:17px;padding:2px 12px 0;text-align:center;color:var(--green);font-size:11px}
+@media(max-height:700px){header{padding-top:8px;padding-bottom:7px}.stats{padding-top:6px;padding-bottom:6px}.tool{padding:6px 2px}.tool .emoji{font-size:19px;margin-bottom:3px}button{padding:9px 4px}}
 </style>
 </head>
 <body>
 <div id="app">
-  <header>
-    <div>
-      <div class="logo">☀ SOLAR <span>TYCOON</span></div>
-      <div class="day" id="day">День 1 · Начало строительства</div>
-    </div>
-    <div class="money" id="money">₴ 25 000</div>
-  </header>
-
-  <div class="stats">
-    <div class="stat"><small>МОЩНОСТЬ</small><strong id="power">0 кВт</strong></div>
-    <div class="stat"><small>ЭНЕРГИЯ</small><strong id="energy">0 кВт·ч</strong></div>
-    <div class="stat"><small>ДОХОД</small><strong id="income">0 ₴</strong></div>
+<header>
+  <div><div class="logo">☀ SOLAR <span>TYCOON</span></div><div class="day" id="day">День 1</div></div>
+  <div class="money" id="money">₴ 25 000</div>
+</header>
+<div class="stats">
+  <div class="stat"><small>МОЩНОСТЬ</small><strong id="power">0 кВт</strong></div>
+  <div class="stat"><small>ЭНЕРГИЯ</small><strong id="energy">0 кВт·ч</strong></div>
+  <div class="stat"><small>ДОХОД</small><strong id="income">0 ₴</strong></div>
+</div>
+<div id="scene">
+  <canvas id="game"></canvas>
+  <div class="hint">Перемещай поле пальцем · Масштаб двумя пальцами</div>
+  <div class="weather" id="weather">☀ Ясно</div>
+  <div class="camera">
+    <button id="zoomIn">＋</button><button id="zoomOut">－</button><button id="rotate">⟳</button>
   </div>
-
-  <div id="scene">
-    <canvas id="game"></canvas>
-    <div class="hint">Перемещай поле пальцем · Масштаб двумя пальцами</div>
-    <div class="weather" id="weather">☀ Ясно</div>
-    <div class="camera">
-      <button id="zoomIn">＋</button>
-      <button id="zoomOut">－</button>
-      <button id="rotate">⟳</button>
-    </div>
-  </div>
-
-  <div class="section-title">СТРОИТЕЛЬСТВО · ВЫБЕРИ ОБЪЕКТ</div>
-  <div class="tools">
-    <button class="tool active" data-type="panel">
-      <span class="emoji">▦</span>Панель<small>₴ 2 500</small>
-    </button>
-    <button class="tool" data-type="inverter">
-      <span class="emoji">▣</span>Инвертор<small>₴ 8 000</small>
-    </button>
-    <button class="tool" data-type="battery">
-      <span class="emoji">▤</span>Батарея<small>₴ 6 500</small>
-    </button>
-    <button class="tool" data-type="transformer">
-      <span class="emoji">⚡</span>Трансформатор<small>₴ 12 000</small>
-    </button>
-  </div>
-
-  <div id="message">Выбери оборудование и нажми на участок земли</div>
-  <div class="actions">
-    <button class="primary" id="nextDay">☀ Следующий день</button>
-    <button class="gold" id="sell">Продать энергию</button>
-    <button id="expand">＋ Расширить участок</button>
-  </div>
-  <footer>Прогресс автоматически сохраняется на этом устройстве</footer>
+</div>
+<div class="section-title">СТРОИТЕЛЬСТВО · ВЫБЕРИ ОБЪЕКТ</div>
+<div class="tools">
+  <button class="tool active" data-type="panel"><span class="emoji">▦</span>Панель<small>₴ 2 500</small></button>
+  <button class="tool" data-type="inverter"><span class="emoji">▣</span>Инвертор<small>₴ 8 000</small></button>
+  <button class="tool" data-type="battery"><span class="emoji">▤</span>Батарея<small>₴ 6 500</small></button>
+  <button class="tool" data-type="transformer"><span class="emoji">⚡</span>Трансформатор<small>₴ 12 000</small></button>
+</div>
+<div id="message">Выбери оборудование и нажми на участок земли</div>
+<div class="actions">
+  <button class="primary" id="nextDay">☀ Следующий день</button>
+  <button class="gold" id="sell">Продать энергию</button>
+  <button id="expand">＋ Расширить участок</button>
+</div>
+<footer>Прогресс автоматически сохраняется на этом устройстве</footer>
 </div>
 
 <script>
-(() => {
-  "use strict";
+(()=>{
+"use strict";
+const tg=window.Telegram&&window.Telegram.WebApp;
+if(tg){try{tg.ready();tg.expand()}catch(e){}}
 
-  const tg = window.Telegram && window.Telegram.WebApp;
-  if (tg) {
-    try { tg.ready(); tg.expand(); } catch(e) {}
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+const scene=document.getElementById("scene");
+const prices={panel:2500,inverter:8000,battery:6500,transformer:12000};
+const labels={panel:"Солнечная панель",inverter:"Инвертор",battery:"Аккумулятор",transformer:"Трансформатор"};
+const defaults={cash:25000,day:1,cols:10,rows:10,items:[],stored:0,totalEnergy:0,totalEarned:0,weather:"sun"};
+function loadGame(){
+  try{
+    const saved=JSON.parse(localStorage.getItem("solarTycoonSave"));
+    if(saved&&Array.isArray(saved.items))return {...defaults,...saved};
+  }catch(e){}
+  return {...defaults,items:[]};
+}
+let game=loadGame();
+let selected="panel",zoom=.88,angle=0,camX=0,camY=0;
+let width=0,height=0,dpr=1,pointers=new Map(),gesture=null,moved=false;
+const TW=64,TH=32;
+
+function saveGame(){
+  try{localStorage.setItem("solarTycoonSave",JSON.stringify(game))}catch(e){}
+}
+function say(t){document.getElementById("message").textContent=t}
+function money(n){return "₴ "+Math.floor(n).toLocaleString("ru-RU")}
+function count(type){return game.items.filter(o=>o.type===type).length}
+function has(type){return count(type)>0}
+
+/* ОДНА ПАНЕЛЬ = 600 ВТ = 0,6 КВТ */
+function productionPower(){
+  return has("inverter")&&has("transformer")?count("panel")*.6:0;
+}
+/* Эквивалентные часы солнечной выработки за игровой день */
+function sunlightHours(){
+  return game.weather==="sun"?7.3:game.weather==="cloud"?4.2:1.8;
+}
+function dailyProduction(){
+  return productionPower()*sunlightHours();
+}
+/* Базовый накопитель 1000 кВт·ч, каждая батарея добавляет 500 */
+function storageCapacity(){return 1000+count("battery")*500}
+
+function updateUI(){
+  document.getElementById("money").textContent=money(game.cash);
+  document.getElementById("day").textContent="День "+game.day+" · Солнечная электростанция";
+  document.getElementById("power").textContent=productionPower().toFixed(1)+" кВт";
+  document.getElementById("energy").textContent=game.stored.toFixed(1)+" кВт·ч";
+  document.getElementById("income").textContent=money(game.totalEarned);
+  document.getElementById("weather").textContent=game.weather==="sun"?"☀ Ясно":game.weather==="cloud"?"☁ Облачно":"🌧 Дождь";
+  document.getElementById("expand").disabled=game.cash<10000||game.cols>=20;
+  document.getElementById("sell").disabled=game.stored<=0;
+  saveGame();
+}
+function resize(){
+  const r=scene.getBoundingClientRect();width=r.width;height=r.height;
+  dpr=Math.min(window.devicePixelRatio||1,2);
+  canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);draw();
+}
+function project(x,y,z=0){
+  const xx=(x-y)*TW/2,yy=(x+y)*TH/2-z;
+  const c=Math.cos(angle),s=Math.sin(angle);
+  return{x:width/2+camX+(xx*c-yy*s)*zoom,y:height*.51+camY+(xx*s+yy*c)*zoom};
+}
+function unproject(px,py){
+  const dx=(px-width/2-camX)/zoom,dy=(py-height*.51-camY)/zoom;
+  const c=Math.cos(angle),s=Math.sin(angle);
+  const xx=dx*c+dy*s,yy=-dx*s+dy*c;
+  return{x:xx/TW+yy/TH,y:yy/TH-xx/TW};
+}
+function polygon(points,fill,stroke=null,lineWidth=1){
+  ctx.beginPath();
+  points.forEach((p,i)=>{const q=project(p[0],p[1],p[2]||0);if(!i)ctx.moveTo(q.x,q.y);else ctx.lineTo(q.x,q.y)});
+  ctx.closePath();ctx.fillStyle=fill;ctx.fill();
+  if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lineWidth;ctx.stroke()}
+}
+function line(a,b,color,w=1){
+  const p=project(a[0],a[1],a[2]||0),q=project(b[0],b[1],b[2]||0);
+  ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.strokeStyle=color;ctx.lineWidth=w;ctx.stroke();
+}
+function ground(){
+  const c=game.cols,r=game.rows;
+  polygon([[0,0],[c,0],[c,r],[0,r]],"#668d51","#426a40",2);
+  for(let x=0;x<c;x++)for(let y=0;y<r;y++){
+    const seed=(x*37+y*71)%11,p=project(x+.5,y+.5);
+    ctx.fillStyle=seed%2?"#ffffff12":"#183e2014";
+    ctx.beginPath();ctx.ellipse(p.x,p.y,2.4*zoom,1.2*zoom,0,0,Math.PI*2);ctx.fill();
   }
-
-  const canvas = document.getElementById("game");
-  const ctx = canvas.getContext("2d");
-  const scene = document.getElementById("scene");
-
-  const prices = {
-    panel:2500, inverter:8000, battery:6500, transformer:12000
-  };
-  const labels = {
-    panel:"Солнечная панель",
-    inverter:"Инвертор",
-    battery:"Аккумулятор",
-    transformer:"Трансформатор"
-  };
-
-  const defaults = {
-    cash:25000, day:1, cols:10, rows:10,
-    items:[], stored:0, totalEnergy:0, totalEarned:0,
-    weather:"sun"
-  };
-
-  let game = loadGame();
-  let selected = "panel";
-  let zoom = 0.88;
-  let angle = 0;
-  let camX = 0;
-  let camY = 0;
-  let width = 0, height = 0;
-  let dpr = 1;
-  let pointers = new Map();
-  let gesture = null;
-  let moved = false;
-  let lastTap = 0;
-
-  const TW = 64;
-  const TH = 32;
-
-  function loadGame() {
-    try {
-      const saved = JSON.parse(localStorage.getItem("solarTycoonSave"));
-      if (saved && Array.isArray(saved.items)) {
-        return {...defaults, ...saved};
-      }
-    } catch(e) {}
-    return structuredClone(defaults);
-  }
-
-  function saveGame() {
-    try {
-      localStorage.setItem("solarTycoonSave", JSON.stringify(game));
-    } catch(e) {
-      say("Не удалось сохранить прогресс на устройстве");
-    }
-  }
-
-  function money(n) {
-    return "₴ " + Math.floor(n).toLocaleString("ru-RU");
-  }
-
-  function say(text) {
-    document.getElementById("message").textContent = text;
-  }
-
-  function count(type) {
-    return game.items.filter(o => o.type === type).length;
-  }
-
-  function has(type) {
-    return count(type) > 0;
-  }
-
-  function productionPower() {
-    return has("inverter") && has("transformer") ? count("panel") * 0.55 : 0;
-  }
-
-  function updateUI() {
-    document.getElementById("money").textContent = money(game.cash);
-    document.getElementById("day").textContent =
-      "День " + game.day + " · Солнечная электростанция";
-    document.getElementById("power").textContent =
-      productionPower().toFixed(2) + " кВт";
-    document.getElementById("energy").textContent =
-      game.stored.toFixed(1) + " кВт·ч";
-    document.getElementById("income").textContent =
-      money(game.totalEarned);
-    document.getElementById("weather").textContent =
-      game.weather === "sun" ? "☀ Ясно" :
-      game.weather === "cloud" ? "☁ Облачно" : "🌧 Дождь";
-    document.getElementById("expand").disabled =
-      game.cash < 10000 || game.cols >= 20;
-    document.getElementById("sell").disabled = game.stored <= 0;
-    saveGame();
-  }
-
-  function resize() {
-    const r = scene.getBoundingClientRect();
-    width = r.width;
-    height = r.height;
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = Math.round(width * dpr);
-    canvas.height = Math.round(height * dpr);
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-    draw();
-  }
-
-  function project(x,y,z=0) {
-    const xx = (x-y) * TW/2;
-    const yy = (x+y) * TH/2 - z;
-    const c = Math.cos(angle), s = Math.sin(angle);
-    return {
-      x: width/2 + camX + (xx*c - yy*s)*zoom,
-      y: height*0.51 + camY + (xx*s + yy*c)*zoom
-    };
-  }
-
-  function unproject(px,py) {
-    const dx = (px-width/2-camX)/zoom;
-    const dy = (py-height*0.51-camY)/zoom;
-    const c = Math.cos(angle), s = Math.sin(angle);
-    const xx = dx*c + dy*s;
-    const yy = -dx*s + dy*c;
-    return {
-      x: xx/TW + yy/TH,
-      y: yy/TH - xx/TW
-    };
-  }
-
-  function polygon(points, fill, stroke=null, lineWidth=1) {
-    ctx.beginPath();
-    points.forEach((p,i) => {
-      const q = project(p[0],p[1],p[2]||0);
-      if (i===0) ctx.moveTo(q.x,q.y);
-      else ctx.lineTo(q.x,q.y);
-    });
-    ctx.closePath();
-    ctx.fillStyle = fill;
-    ctx.fill();
-    if (stroke) {
-      ctx.strokeStyle = stroke;
-      ctx.lineWidth = lineWidth;
-      ctx.stroke();
-    }
-  }
-
-  function line(a,b,color,width=1) {
-    const p=project(a[0],a[1],a[2]||0);
-    const q=project(b[0],b[1],b[2]||0);
-    ctx.beginPath();
-    ctx.moveTo(p.x,p.y);
-    ctx.lineTo(q.x,q.y);
-    ctx.strokeStyle=color;
-    ctx.lineWidth=width;
-    ctx.stroke();
-  }
-
-  function ground() {
-    const c=game.cols, r=game.rows;
-
-    // Единая поверхность без щелей между клетками
-    polygon([[0,0],[c,0],[c,r],[0,r]],"#668d51","#426a40",2);
-
-    // Лёгкая текстура травы
-    for (let x=0; x<c; x++) {
-      for (let y=0; y<r; y++) {
-        const seed=(x*37+y*71)%11;
-        const center=project(x+0.5,y+0.5);
-        ctx.fillStyle=seed%2 ? "#ffffff12" : "#183e2014";
-        ctx.beginPath();
-        ctx.ellipse(center.x,center.y,2.4*zoom,1.2*zoom,0,0,Math.PI*2);
-        ctx.fill();
-      }
-    }
-
-    // Сетка участка
-    for (let x=0;x<=c;x++) line([x,0],[x,r],"#d9efb02c",0.8);
-    for (let y=0;y<=r;y++) line([0,y],[c,y],"#d9efb02c",0.8);
-
-    // Дорожка вдоль нижней стороны участка
-    polygon([
-      [-0.1,r-1.25],[c+0.1,r-1.25],
-      [c+0.1,r-0.35],[-0.1,r-0.35]
-    ],"#a88b62","#806947",1);
-
-    for(let x=0.3;x<c;x+=1.1) {
-      line([x,r-0.8],[x+0.45,r-0.8],"#e0c99a",1.4);
-    }
-
-    drawFence(c,r);
-  }
-
-  function drawFence(c,r) {
-    const corners = [
-      [[0,0],[c,0]], [[c,0],[c,r]],
-      [[c,r],[0,r]], [[0,r],[0,0]]
-    ];
-    corners.forEach(edge => {
-      const [a,b]=edge;
-      line([a[0],a[1],10],[b[0],b[1],10],"#d0d7bd",2.2*zoom);
-      const length=Math.max(c,r);
-      for(let i=0;i<=length;i++) {
-        const t=i/length;
-        const x=a[0]+(b[0]-a[0])*t;
-        const y=a[1]+(b[1]-a[1])*t;
-        const p=project(x,y,0);
-        const top=project(x,y,15);
-        ctx.strokeStyle="#e0dfc8";
-        ctx.lineWidth=2.2*zoom;
-        ctx.beginPath();
-        ctx.moveTo(p.x,p.y);
-        ctx.lineTo(top.x,top.y);
-        ctx.stroke();
-      }
-    });
-  }
-
-  function drawPanel(x,y) {
-    const center=project(x+0.5,y+0.5);
-    ctx.fillStyle="#102c2850";
-    ctx.beginPath();
-    ctx.ellipse(center.x,center.y+8*zoom,22*zoom,9*zoom,0,0,Math.PI*2);
-    ctx.fill();
-
-    // Опоры
-    line([x+0.23,y+0.75,0],[x+0.35,y+0.55,20],"#aeb9b6",2*zoom);
-    line([x+0.75,y+0.75,0],[x+0.65,y+0.55,20],"#aeb9b6",2*zoom);
-
-    const z=23;
-    polygon([
-      [x+0.08,y+0.18,z],
-      [x+0.88,y+0.18,z],
-      [x+0.88,y+0.82,z],
-      [x+0.08,y+0.82,z]
-    ],"#123f68","#d5e6e7",2*zoom);
-
-    // Солнечные ячейки
-    for(let i=1;i<4;i++) {
-      const xx=x+0.08+i*0.8/4;
-      line([xx,y+0.18,z+0.5],[xx,y+0.82,z+0.5],"#78b6d4",0.8*zoom);
-    }
-    for(let j=1;j<3;j++) {
-      const yy=y+0.18+j*0.64/3;
-      line([x+0.08,yy,z+0.5],[x+0.88,yy,z+0.5],"#78b6d4",0.8*zoom);
-    }
-    polygon([
-      [x+0.08,y+0.18,z+1],
-      [x+0.88,y+0.18,z+1],
-      [x+0.88,y+0.82,z+1],
-      [x+0.08,y+0.82,z+1]
-    ],"#ffffff08","#d9e8e8",1*zoom);
-  }
-
-  function drawBox(x,y,type) {
-    let w=0.65, d=0.65, h=type==="transformer"?38:27;
-    let top="#8fa6a6", left="#526d70", right="#304c53";
-    if(type==="inverter") {
-      top="#d4e2df"; left="#829b9b"; right="#526e73";
-    }
-    if(type==="battery") {
-      top="#d7d9d0"; left="#82918b"; right="#5a6b68";
-    }
-    if(type==="transformer") {
-      top="#e2c87f"; left="#a88b4d"; right="#76602e";
-    }
-
-    const x1=x+0.5-w/2, x2=x+0.5+w/2;
-    const y1=y+0.5-d/2, y2=y+0.5+d/2;
-    const z=h;
-
-    // Тень
-    const p=project(x+0.5,y+0.5);
-    ctx.fillStyle="#10231d50";
-    ctx.beginPath();
-    ctx.ellipse(p.x+5*zoom,p.y+4*zoom,20*zoom,10*zoom,0,0,Math.PI*2);
-    ctx.fill();
-
-    polygon([[x1,y1,z],[x2,y1,z],[x2,y2,z],[x1,y2,z]],top,"#d7e3d8",1.2*zoom);
-    polygon([[x1,y1,0],[x1,y2,0],[x1,y2,z],[x1,y1,z]],left,"#d7e3d8",0.7*zoom);
-    polygon([[x1,y2,0],[x2,y2,0],[x2,y2,z],[x1,y2,z]],right,"#d7e3d8",0.7*zoom);
-
-    // Передняя панель и детали
-    if(type==="inverter") {
-      polygon([[x1+0.08,y2,7],[x2-0.08,y2,7],[x2-0.08,y2,20],[x1+0.08,y2,20]],"#203b3b");
-      const led=project(x+0.5,y2,16);
-      ctx.fillStyle="#62e5a5";
-      ctx.beginPath(); ctx.arc(led.x,led.y,2.5*zoom,0,Math.PI*2); ctx.fill();
-    } else if(type==="battery") {
-      for(let i=0;i<3;i++) {
-        line([x1+0.13+i*0.15,y2,8],[x1+0.13+i*0.15,y2,20],"#d9e5d9",1.5*zoom);
-      }
-    } else {
-      line([x+0.5,y2,8],[x+0.5,y2,26],"#f5e2a0",2*zoom);
-      line([x+0.36,y2,17],[x+0.64,y2,17],"#f5e2a0",2*zoom);
-    }
-  }
-
-  function drawItems() {
-    const sorted=[...game.items].sort((a,b)=>(a.x+a.y)-(b.x+b.y));
-    sorted.forEach(o=>{
-      if(o.type==="panel") drawPanel(o.x,o.y);
-      else drawBox(o.x,o.y,o.type);
-    });
-  }
-
-  function drawSelection() {
-    if(!selected) return;
-    // Показываем выбранный инструмент в строке, клетку подсвечиваем только при наведении мышью
-  }
-
-  function draw() {
-    if(!ctx || !width || !height) return;
-    ctx.clearRect(0,0,width,height);
-
-    const sky=ctx.createLinearGradient(0,0,0,height);
-    sky.addColorStop(0,"#a9c9c1");
-    sky.addColorStop(1,"#708c68");
-    ctx.fillStyle=sky;
-    ctx.fillRect(0,0,width,height);
-
-    ground();
-    drawItems();
-    drawSelection();
-  }
-
-  function occupied(x,y) {
-    return game.items.some(o=>o.x===x && o.y===y);
-  }
-
-  function placeAt(px,py) {
-    const g=unproject(px,py);
-    const x=Math.floor(g.x), y=Math.floor(g.y);
-    if(x<0 || y<0 || x>=game.cols || y>=game.rows) return;
-
-    if(y>=game.rows-1) {
-      say("Это дорожка. Строй на свободной траве.");
-      return;
-    }
-    if(occupied(x,y)) {
-      say("Это место уже занято.");
-      return;
-    }
-    const price=prices[selected];
-    if(game.cash<price) {
-      say("Недостаточно денег для строительства.");
-      return;
-    }
-    game.cash-=price;
-    game.items.push({type:selected,x,y});
-    say(labels[selected]+" построен!");
-    updateUI();
-    draw();
-  }
-
-  function distance(a,b) {
-    return Math.hypot(a.x-b.x,a.y-b.y);
-  }
-
-  function pointerPosition(e) {
-    const r=canvas.getBoundingClientRect();
-    return {x:e.clientX-r.left,y:e.clientY-r.top};
-  }
-
-  canvas.addEventListener("pointerdown",e=>{
-    e.preventDefault();
-    canvas.setPointerCapture(e.pointerId);
-    const p=pointerPosition(e);
-    pointers.set(e.pointerId,p);
-    moved=false;
-
-    if(pointers.size===1) {
-      gesture={type:"pan",start:p,last:p,camX,camY};
-    } else if(pointers.size===2) {
-      const arr=[...pointers.values()];
-      gesture={
-        type:"multi",
-        dist:distance(arr[0],arr[1]),
-        angle:Math.atan2(arr[1].y-arr[0].y,arr[1].x-arr[0].x),
-        zoom, rotation:angle,
-        center:{x:(arr[0].x+arr[1].x)/2,y:(arr[0].y+arr[1].y)/2}
-      };
+  for(let x=0;x<=c;x++)line([x,0],[x,r],"#d9efb02c",.8);
+  for(let y=0;y<=r;y++)line([0,y],[c,y],"#d9efb02c",.8);
+  polygon([[-.1,r-1.25],[c+.1,r-1.25],[c+.1,r-.35],[-.1,r-.35]],"#a88b62","#806947",1);
+  for(let x=.3;x<c;x+=1.1)line([x,r-.8],[x+.45,r-.8],"#e0c99a",1.4);
+  drawFence(c,r);
+}
+function drawFence(c,r){
+  const edges=[[[0,0],[c,0]],[[c,0],[c,r]],[[c,r],[0,r]],[[0,r],[0,0]]];
+  edges.forEach(([a,b])=>{
+    line([a[0],a[1],10],[b[0],b[1],10],"#d0d7bd",2.2*zoom);
+    const len=Math.max(c,r);
+    for(let i=0;i<=len;i++){
+      const t=i/len,x=a[0]+(b[0]-a[0])*t,y=a[1]+(b[1]-a[1])*t;
+      const p=project(x,y),top=project(x,y,15);
+      ctx.strokeStyle="#e0dfc8";ctx.lineWidth=2.2*zoom;
+      ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(top.x,top.y);ctx.stroke();
     }
   });
-
-  canvas.addEventListener("pointermove",e=>{
-    if(!pointers.has(e.pointerId)) return;
-    const p=pointerPosition(e);
-    pointers.set(e.pointerId,p);
-
-    if(pointers.size===1 && gesture && gesture.type==="pan") {
-      const dx=p.x-gesture.start.x, dy=p.y-gesture.start.y;
-      if(Math.hypot(dx,dy)>6) moved=true;
-      camX=gesture.camX+dx;
-      camY=gesture.camY+dy;
-      draw();
-    } else if(pointers.size>=2 && gesture) {
-      const arr=[...pointers.values()];
-      const d=distance(arr[0],arr[1]);
-      const a=Math.atan2(arr[1].y-arr[0].y,arr[1].x-arr[0].x);
-      if(gesture.type!=="multi") {
-        gesture={
-          type:"multi",dist:d,angle:a,zoom,
-          rotation:angle,
-          center:{x:(arr[0].x+arr[1].x)/2,y:(arr[0].y+arr[1].y)/2}
-        };
-      }
-      zoom=Math.max(0.48,Math.min(1.8,gesture.zoom*d/Math.max(1,gesture.dist)));
-      angle=gesture.rotation+(a-gesture.angle);
-      moved=true;
-      draw();
-    }
-  });
-
-  canvas.addEventListener("pointerup",e=>{
-    const p=pointerPosition(e);
-    const wasTap=!moved && pointers.size===1 && gesture && gesture.type==="pan";
-    pointers.delete(e.pointerId);
-    if(wasTap) placeAt(p.x,p.y);
-    gesture=null;
-    if(pointers.size===1) {
-      const remaining=[...pointers.values()][0];
-      gesture={type:"pan",start:remaining,last:remaining,camX,camY};
-    }
-  });
-
-  canvas.addEventListener("pointercancel",e=>{
-    pointers.delete(e.pointerId);
-    gesture=null;
-  });
-
-  document.querySelectorAll(".tool").forEach(btn=>{
-    btn.addEventListener("click",()=>{
-      selected=btn.dataset.type;
-      document.querySelectorAll(".tool").forEach(b=>b.classList.remove("active"));
-      btn.classList.add("active");
-      say("Выбрано: "+labels[selected]+". Нажми на свободную клетку.");
-    });
-  });
-
-  document.getElementById("zoomIn").onclick=()=>{
-    zoom=Math.min(1.8,zoom*1.15); draw();
-  };
-  document.getElementById("zoomOut").onclick=()=>{
-    zoom=Math.max(0.48,zoom/1.15); draw();
-  };
-  document.getElementById("rotate").onclick=()=>{
-    angle+=Math.PI/4; draw();
-  };
-
-  document.getElementById("nextDay").onclick=()=>{
-    const power=productionPower();
-    const factor=game.weather==="sun"?4.5:
-      game.weather==="cloud"?2.5:1.2;
-    let generated=power*factor*8;
-
-    const batteryCapacity=has("battery")?100*count("battery"):20;
-    const room=Math.max(0,batteryCapacity-game.stored);
-    generated=Math.min(generated,room);
-
-    game.stored+=generated;
-    game.totalEnergy+=generated;
-    game.day++;
-
-    const weatherRoll=Math.random();
-    game.weather=weatherRoll<0.58?"sun":
-      weatherRoll<0.88?"cloud":"rain";
-
-    say(power>0
-      ? "Произведено "+generated.toFixed(1)+" кВт·ч энергии."
-      : "Для производства нужны панели, инвертор и трансформатор.");
-
-    updateUI();
-    draw();
-  };
-
-  document.getElementById("sell").onclick=()=>{
-    if(game.stored<=0) {
-      say("Пока нет энергии для продажи.");
-      return;
-    }
-    const earned=game.stored*8;
-    game.cash+=earned;
-    game.totalEarned+=earned;
-    const sold=game.stored;
-    game.stored=0;
-    say("Продано "+sold.toFixed(1)+" кВт·ч. Получено "+money(earned)+".");
-    updateUI();
-  };
-
-  document.getElementById("expand").onclick=()=>{
-    if(game.cash<10000) {
-      say("Нужно ₴ 10 000 для расширения участка.");
-      return;
-    }
-    if(game.cols>=20) {
-      say("Участок уже достиг максимального размера.");
-      return;
-    }
-    game.cash-=10000;
-    game.cols+=2;
-    game.rows+=2;
-    say("Участок расширен! Появилось больше места для строительства.");
-    updateUI();
-    draw();
-  };
-
-  // Центрируем участок при первом запуске
-  function centerLand() {
-    const mapWidth=(game.cols+game.rows)*TW/2;
-    const mapHeight=(game.cols+game.rows)*TH/2;
-    zoom=Math.min(1.05,Math.max(0.58,
-      Math.min((width-25)/mapWidth,(height-35)/mapHeight)));
-    camX=0;
-    camY=-mapHeight*zoom*0.04;
+}
+function drawPanel(x,y){
+  const center=project(x+.5,y+.5);
+  ctx.fillStyle="#102c2850";ctx.beginPath();
+  ctx.ellipse(center.x,center.y+8*zoom,22*zoom,9*zoom,0,0,Math.PI*2);ctx.fill();
+  line([x+.23,y+.75,0],[x+.35,y+.55,20],"#aeb9b6",2*zoom);
+  line([x+.75,y+.75,0],[x+.65,y+.55,20],"#aeb9b6",2*zoom);
+  const z=23;
+  polygon([[x+.08,y+.18,z],[x+.88,y+.18,z],[x+.88,y+.82,z],[x+.08,y+.82,z]],"#123f68","#d5e6e7",2*zoom);
+  for(let i=1;i<4;i++){const xx=x+.08+i*.8/4;line([xx,y+.18,z+.5],[xx,y+.82,z+.5],"#78b6d4",.8*zoom)}
+  for(let j=1;j<3;j++){const yy=y+.18+j*.64/3;line([x+.08,yy,z+.5],[x+.88,yy,z+.5],"#78b6d4",.8*zoom)}
+}
+function drawBox(x,y,type){
+  let w=.65,d=.65,h=type==="transformer"?38:27;
+  let top="#8fa6a6",left="#526d70",right="#304c53";
+  if(type==="inverter"){top="#d4e2df";left="#829b9b";right="#526e73"}
+  if(type==="battery"){top="#d7d9d0";left="#82918b";right="#5a6b68"}
+  if(type==="transformer"){top="#e2c87f";left="#a88b4d";right="#76602e"}
+  const x1=x+.5-w/2,x2=x+.5+w/2,y1=y+.5-d/2,y2=y+.5+d/2,z=h;
+  const p=project(x+.5,y+.5);
+  ctx.fillStyle="#10231d50";ctx.beginPath();ctx.ellipse(p.x+5*zoom,p.y+4*zoom,20*zoom,10*zoom,0,0,Math.PI*2);ctx.fill();
+  polygon([[x1,y1,z],[x2,y1,z],[x2,y2,z],[x1,y2,z]],top,"#d7e3d8",1.2*zoom);
+  polygon([[x1,y1,0],[x1,y2,0],[x1,y2,z],[x1,y1,z]],left,"#d7e3d8",.7*zoom);
+  polygon([[x1,y2,0],[x2,y2,0],[x2,y2,z],[x1,y2,z]],right,"#d7e3d8",.7*zoom);
+  if(type==="inverter"){
+    polygon([[x1+.08,y2,7],[x2-.08,y2,7],[x2-.08,y2,20],[x1+.08,y2,20]],"#203b3b");
+    const led=project(x+.5,y2,16);ctx.fillStyle="#62e5a5";ctx.beginPath();ctx.arc(led.x,led.y,2.5*zoom,0,Math.PI*2);ctx.fill();
+  }else if(type==="battery"){
+    for(let i=0;i<3;i++)line([x1+.13+i*.15,y2,8],[x1+.13+i*.15,y2,20],"#d9e5d9",1.5*zoom);
+  }else{
+    line([x+.5,y2,8],[x+.5,y2,26],"#f5e2a0",2*zoom);
+    line([x+.36,y2,17],[x+.64,y2,17],"#f5e2a0",2*zoom);
   }
-
-  window.addEventListener("resize",resize);
-  if("ResizeObserver" in window) {
-    new ResizeObserver(resize).observe(scene);
+}
+function drawItems(){
+  [...game.items].sort((a,b)=>(a.x+a.y)-(b.x+b.y)).forEach(o=>{
+    if(o.type==="panel")drawPanel(o.x,o.y);else drawBox(o.x,o.y,o.type);
+  });
+}
+function draw(){
+  if(!ctx||!width||!height)return;
+  ctx.clearRect(0,0,width,height);
+  const sky=ctx.createLinearGradient(0,0,0,height);
+  sky.addColorStop(0,"#a9c9c1");sky.addColorStop(1,"#708c68");
+  ctx.fillStyle=sky;ctx.fillRect(0,0,width,height);
+  ground();drawItems();
+}
+function occupied(x,y){return game.items.some(o=>o.x===x&&o.y===y)}
+function placeAt(px,py){
+  const g=unproject(px,py),x=Math.floor(g.x),y=Math.floor(g.y);
+  if(x<0||y<0||x>=game.cols||y>=game.rows)return;
+  if(y>=game.rows-1){say("Это дорожка. Строй на свободной траве.");return}
+  if(occupied(x,y)){say("Это место уже занято.");return}
+  if(game.cash<prices[selected]){say("Недостаточно денег.");return}
+  game.cash-=prices[selected];game.items.push({type:selected,x,y});
+  say(labels[selected]+" построен!");updateUI();draw();
+}
+function distance(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
+function pointerPosition(e){const r=canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
+canvas.addEventListener("pointerdown",e=>{
+  e.preventDefault();canvas.setPointerCapture(e.pointerId);
+  const p=pointerPosition(e);pointers.set(e.pointerId,p);moved=false;
+  if(pointers.size===1)gesture={type:"pan",start:p,camX,camY};
+  else if(pointers.size===2){
+    const a=[...pointers.values()];
+    gesture={type:"multi",dist:distance(a[0],a[1]),angle:Math.atan2(a[1].y-a[0].y,a[1].x-a[0].x),zoom,rotation:angle};
   }
+});
+canvas.addEventListener("pointermove",e=>{
+  if(!pointers.has(e.pointerId))return;
+  const p=pointerPosition(e);pointers.set(e.pointerId,p);
+  if(pointers.size===1&&gesture&&gesture.type==="pan"){
+    const dx=p.x-gesture.start.x,dy=p.y-gesture.start.y;
+    if(Math.hypot(dx,dy)>6)moved=true;
+    camX=gesture.camX+dx;camY=gesture.camY+dy;draw();
+  }else if(pointers.size>=2&&gesture){
+    const a=[...pointers.values()],d=distance(a[0],a[1]);
+    const ang=Math.atan2(a[1].y-a[0].y,a[1].x-a[0].x);
+    if(gesture.type!=="multi")gesture={type:"multi",dist:d,angle:ang,zoom,rotation:angle};
+    zoom=Math.max(.48,Math.min(1.8,gesture.zoom*d/Math.max(1,gesture.dist)));
+    angle=gesture.rotation+(ang-gesture.angle);moved=true;draw();
+  }
+});
+canvas.addEventListener("pointerup",e=>{
+  const p=pointerPosition(e),tap=!moved&&pointers.size===1&&gesture&&gesture.type==="pan";
+  pointers.delete(e.pointerId);
+  if(tap)placeAt(p.x,p.y);
+  gesture=null;
+  if(pointers.size===1){const q=[...pointers.values()][0];gesture={type:"pan",start:q,camX,camY}}
+});
+canvas.addEventListener("pointercancel",e=>{pointers.delete(e.pointerId);gesture=null});
 
-  resize();
-  centerLand();
+document.querySelectorAll(".tool").forEach(btn=>btn.addEventListener("click",()=>{
+  selected=btn.dataset.type;
+  document.querySelectorAll(".tool").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");say("Выбрано: "+labels[selected]+". Нажми на свободную клетку.");
+}));
+document.getElementById("zoomIn").onclick=()=>{zoom=Math.min(1.8,zoom*1.15);draw()};
+document.getElementById("zoomOut").onclick=()=>{zoom=Math.max(.48,zoom/1.15);draw()};
+document.getElementById("rotate").onclick=()=>{angle+=Math.PI/4;draw()};
+
+document.getElementById("nextDay").onclick=()=>{
+  const power=productionPower();
+  const generated=dailyProduction();
+  const capacity=storageCapacity();
+  const available=Math.max(0,capacity-game.stored);
+  const stored=Math.min(generated,available);
+  game.stored+=stored;
+  game.totalEnergy+=generated;
+  game.day++;
+  const roll=Math.random();
+  game.weather=roll<.58?"sun":roll<.88?"cloud":"rain";
+  if(power<=0)say("Для выработки нужны панели, инвертор и трансформатор.");
+  else if(stored<generated)say("Произведено "+generated.toFixed(1)+" кВт·ч. В накопителе не хватило места — продай энергию или установи батареи.");
+  else say("Произведено "+generated.toFixed(1)+" кВт·ч энергии! Мощность панелей: "+power.toFixed(1)+" кВт.");
+  updateUI();draw();
+};
+document.getElementById("sell").onclick=()=>{
+  if(game.stored<=0){say("Пока нет энергии для продажи.");return}
+  const sold=game.stored,earned=sold*8;
+  game.cash+=earned;game.totalEarned+=earned;game.stored=0;
+  say("Продано "+sold.toFixed(1)+" кВт·ч. Получено "+money(earned)+".");
   updateUI();
-  draw();
+};
+document.getElementById("expand").onclick=()=>{
+  if(game.cash<10000){say("Нужно ₴ 10 000 для расширения участка.");return}
+  if(game.cols>=20){say("Участок уже достиг максимального размера.");return}
+  game.cash-=10000;game.cols+=2;game.rows+=2;
+  say("Участок расширен!");updateUI();draw();
+};
+function centerLand(){
+  const mw=(game.cols+game.rows)*TW/2,mh=(game.cols+game.rows)*TH/2;
+  zoom=Math.min(1.05,Math.max(.58,Math.min((width-25)/mw,(height-35)/mh)));
+  camX=0;camY=-mh*zoom*.04;
+}
+window.addEventListener("resize",resize);
+if("ResizeObserver"in window)new ResizeObserver(resize).observe(scene);
+resize();centerLand();updateUI();draw();
 })();
 </script>
 </body>
