@@ -1,137 +1,88 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Бутылочка 🍾</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 *{box-sizing:border-box}
-body{
- margin:0;padding:12px 8px;background:#29180f;color:white;
- font-family:Arial,sans-serif;text-align:center;
-}
+body{margin:0;padding:12px 8px;background:#29180f;color:#fff;font-family:Arial,sans-serif;text-align:center}
 main{max-width:520px;margin:auto}
 h1{font-size:27px;margin:8px;text-shadow:0 2px 5px #000}
 .small{font-size:13px;color:#ffe2bd}
-.card{
- background:#754526;padding:12px;border-radius:16px;margin-top:12px;
- border:1px solid #d9a36c;box-shadow:0 5px 16px #130b07;
-}
-input{
- width:100%;padding:14px;border-radius:10px;border:1px solid #9c6739;
- background:#fff3df;color:#392313;font-size:17px;margin:7px 0;
-}
-button{
- width:100%;padding:14px;margin-top:10px;border:0;border-radius:12px;
- background:#f0a13e;color:#40200e;font-size:17px;font-weight:bold;
-}
+.card{background:#754526;padding:12px;border-radius:16px;margin-top:12px;border:1px solid #d9a36c;box-shadow:0 5px 16px #130b07}
+input{width:100%;padding:14px;border-radius:10px;border:1px solid #9c6739;background:#fff3df;color:#392313;font-size:17px;margin:7px 0}
+button{border:0;border-radius:12px;background:#f0a13e;color:#40200e;font-size:16px;font-weight:bold;padding:13px 10px;cursor:pointer}
 button:disabled{opacity:.45}
+.primary{width:100%;margin-top:10px}
 .secondary{background:#79502d;color:white}
 .hidden{display:none!important}
-.table-tools{
- display:flex;justify-content:space-around;align-items:center;
- padding:7px 0 12px;border-bottom:1px solid #ffffff44;
-}
+
+.table-tools{display:flex;justify-content:space-around;align-items:center;padding:7px 0 12px;border-bottom:1px solid #ffffff44}
 .tool{font-size:21px}
 .tool small{display:block;font-size:10px;margin-top:3px}
+
 .table-board{
- position:relative;overflow:hidden;min-height:420px;padding:12px 5px;
+ position:relative;overflow:hidden;min-height:440px;padding:10px 5px 12px;
  border-radius:16px;
- background:
- repeating-linear-gradient(2deg,transparent 0 22px,#75421d22 24px,#f2c08033 27px,transparent 32px),
- linear-gradient(110deg,#d99b5e,#b97138,#d99b5e);
- box-shadow:inset 0 0 22px #542b16;
+ background:repeating-linear-gradient(2deg,transparent 0 22px,#75421d22 24px,#f2c08033 27px,transparent 32px),linear-gradient(110deg,#d99b5e,#b97138,#d99b5e);
+ box-shadow:inset 0 0 22px #542b16
 }
-.table-info{
- display:flex;justify-content:space-between;align-items:center;
- font-size:12px;color:#fff0d5;position:relative;z-index:5;
-}
-#copy{max-width:230px;padding:9px;font-size:13px;margin:8px auto}
-.arena{
- position:relative;width:100%;height:320px;margin:5px auto 0;
-}
+.table-info{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#fff0d5;position:relative;z-index:8}
+#copy{display:block;max-width:230px;padding:8px 12px;font-size:12px;margin:7px auto}
+
+.arena{position:relative;width:100%;height:365px;margin:0 auto}
 .table-ring{
- position:absolute;width:260px;height:260px;left:50%;top:50%;
+ position:absolute;width:min(72vw,290px);height:min(72vw,290px);
+ max-width:290px;max-height:290px;left:50%;top:48%;
  transform:translate(-50%,-50%);border-radius:50%;
  background:radial-gradient(ellipse,#784323,#60351e 70%,#4b2a19);
  border:8px solid #e0a76c;
- box-shadow:inset 0 0 25px #241208,0 4px 12px #3d1e0d;
+ box-shadow:inset 0 0 25px #241208,0 4px 12px #3d1e0d
 }
-.bottle-wrap{
- position:absolute;left:50%;top:50%;width:100px;height:100px;
- transform:translate(-50%,-50%);z-index:3;
- display:grid;place-items:center;
-}
-.bottle{
- font-size:76px;display:block;
- transform-origin:center center;
- filter:drop-shadow(0 5px 5px #241208);
-}
+.bottle-wrap{position:absolute;left:50%;top:48%;width:80px;height:80px;transform:translate(-50%,-50%);z-index:2;display:grid;place-items:center}
+.bottle{font-size:70px;display:block;transform-origin:center center;filter:drop-shadow(0 5px 5px #241208)}
 .bottle.spinning{animation:spin 2.2s cubic-bezier(.12,.72,.2,1) forwards}
-@keyframes spin{
- from{transform:rotate(0deg)}
- to{transform:rotate(1440deg)}
-}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(1440deg)}}
+
+#players{position:absolute;inset:0;z-index:4;pointer-events:none}
 .player{
- position:absolute;width:72px;min-height:83px;padding:4px 3px;
+ position:absolute;width:72px;min-height:78px;padding:4px 3px;
  border-radius:9px;background:linear-gradient(145deg,#674027,#38251b);
  border:2px solid #d9a46d;box-shadow:0 3px 8px #542c15;
- z-index:4;transform:translate(-50%,-50%);
- overflow:hidden;
+ transform:translate(-50%,-50%);overflow:hidden;
+ transition:left .75s cubic-bezier(.22,.8,.25,1),top .75s cubic-bezier(.22,.8,.25,1),border-color .25s,box-shadow .25s;
+ will-change:left,top
 }
-.player.selected{border:3px solid #ffe45d;box-shadow:0 0 13px #ffe45d}
-.player-avatar{
- width:43px;height:43px;margin:auto;border-radius:7px;
- display:grid;place-items:center;overflow:hidden;
- background:linear-gradient(145deg,#f0d1a4,#a86b38);
- color:#563116;font-size:22px;font-weight:bold;
- border:2px solid #f5d9ad;
-}
+.player.selected{border:2px solid #ffe45d;box-shadow:0 0 13px #ffe45d}
+.player-avatar{width:43px;height:43px;margin:auto;border-radius:7px;display:grid;place-items:center;overflow:hidden;background:linear-gradient(145deg,#f0d1a4,#a86b38);color:#563116;font-size:22px;font-weight:bold;border:2px solid #f5d9ad}
 .player-avatar img{width:100%;height:100%;object-fit:cover}
-.player-name{
- font-size:10px;margin-top:3px;white-space:nowrap;
- overflow:hidden;text-overflow:ellipsis;
-}
+.player-name{font-size:10px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .player-meta{font-size:10px;color:#ffe1ae;margin-top:2px}
-.result{
- font-size:18px;min-height:29px;font-weight:bold;
- color:#fff3d7;text-shadow:0 2px 3px #75401c;
- margin:5px 0;
+
+.center-actions{
+ position:absolute;left:50%;top:70%;transform:translateX(-50%);
+ width:min(310px,92%);z-index:7;display:flex;gap:9px
 }
-.duel{
- background:linear-gradient(145deg,#794a2b,#492b1c);
- border:2px solid #e5b77c;border-radius:15px;
- padding:12px;margin-top:12px;
-}
-.duel-title{color:#ffe2ad;font-size:20px;font-weight:bold}
-.duel-players{display:flex;align-items:center;justify-content:space-around;gap:8px;margin:14px 0}
-.duel-person{
- flex:1;min-width:0;background:#30231c;padding:10px 5px;
- border-radius:12px;border:1px solid #dba96c;
-}
-.duel-avatar{
- width:65px;height:65px;margin:0 auto 7px;border-radius:9px;
- display:grid;place-items:center;overflow:hidden;
- background:#e3bd8d;color:#563116;font-size:28px;font-weight:bold;
-}
-.duel-avatar img{width:100%;height:100%;object-fit:cover}
-.duel-name{font-size:14px;font-weight:bold;overflow-wrap:anywhere}
-.heart{font-size:25px}
-.duel-buttons{display:flex;gap:10px}
-.duel-buttons button{flex:1;color:white;padding:14px 5px}
+.center-actions button{flex:1;min-width:0;padding:12px 5px;color:white;font-size:14px;box-shadow:0 3px 8px #241208}
 .no{background:#d94335}
 .yes{background:#83bd3e}
-.timer{font-size:27px;color:#ffe18a;font-weight:bold;margin:8px}
-.choice-status{font-size:12px;color:#f7dfc2;min-height:18px}
+.timer{position:absolute;left:50%;top:88%;transform:translate(-50%,-50%);z-index:7;font-size:22px;color:#ffe18a;font-weight:bold;text-shadow:0 2px 4px #241208}
+.result{font-size:17px;min-height:28px;font-weight:bold;color:#fff3d7;text-shadow:0 2px 3px #75401c;margin:0 0 3px}
+.choice-status{font-size:11px;color:#ffe5c4;position:absolute;top:63%;left:0;right:0;z-index:7;min-height:15px}
 .status{font-size:13px;color:#fff0d9;margin-top:12px}
-@media(max-width:360px){
- .arena{height:300px}
- .table-ring{width:235px;height:235px}
- .player{width:65px}
- .player-avatar{width:39px;height:39px}
+.hint{font-size:11px;color:#ffebce;margin-top:3px}
+
+@media(max-width:380px){
+ .arena{height:350px}
+ .player{width:66px;min-height:74px}
+ .player-avatar{width:40px;height:40px}
+ .table-board{min-height:425px}
+ .center-actions{top:70%}
 }
 </style>
 </head>
@@ -143,10 +94,10 @@ button:disabled{opacity:.45}
 
 <section class="card" id="entry">
  <input id="nickname" maxlength="20" placeholder="Твоё имя">
- <button id="create">Создать комнату</button>
+ <button class="primary" id="create">Создать комнату</button>
  <p>Или введи код комнаты:</p>
  <input id="roomInput" maxlength="6" placeholder="КОД КОМНАТЫ">
- <button class="secondary" id="join">Присоединиться</button>
+ <button class="primary secondary" id="join">Присоединиться</button>
 </section>
 
 <section class="card hidden" id="game">
@@ -164,46 +115,30 @@ button:disabled{opacity:.45}
    <span id="count">Игроки: 0/12</span>
    <span>СТОЛ · <span id="roomCode"></span></span>
   </div>
+
   <button class="secondary" id="copy">Скопировать код комнаты</button>
 
   <div class="arena" id="arena">
    <div class="table-ring"></div>
-   <div class="bottle-wrap">
-    <span class="bottle" id="bottle">🍾</span>
-   </div>
+   <div class="bottle-wrap"><span class="bottle" id="bottle">🍾</span></div>
    <div id="players"></div>
+
+   <div class="choice-status" id="choiceStatus"></div>
+
+   <div class="center-actions hidden" id="choiceButtons">
+    <button class="no" id="refuse">Отказаться</button>
+    <button class="yes" id="kiss">Поцеловать</button>
+   </div>
+
+   <div class="timer hidden" id="timer">10</div>
   </div>
 
   <div class="result" id="result">Крути бутылочку!</div>
+  <div class="hint" id="hint">Выбранные игроки плавно переместятся в центр стола</div>
  </div>
 
- <section class="duel hidden" id="duel">
-  <div class="duel-title">💋 ТВОЙ ВЫБОР</div>
-  <div class="duel-players">
-   <div class="duel-person">
-    <div class="duel-avatar" id="pickerAvatar">?</div>
-    <div class="duel-name" id="pickerName">Игрок 1</div>
-    <div class="heart">💋</div>
-    <div class="choice-status" id="pickerStatus">Ожидание</div>
-   </div>
-   <div style="font-size:25px">❤️</div>
-   <div class="duel-person">
-    <div class="duel-avatar" id="targetAvatar">?</div>
-    <div class="duel-name" id="targetName">Игрок 2</div>
-    <div class="heart">💋</div>
-    <div class="choice-status" id="targetStatus">Ожидание</div>
-   </div>
-  </div>
-  <div class="timer" id="timer">10</div>
-  <div class="small" id="duelHint">Каждый выбирает самостоятельно</div>
-  <div class="duel-buttons hidden" id="choiceButtons">
-   <button class="no" id="refuse">Отказаться</button>
-   <button class="yes" id="kiss">Поцеловать</button>
-  </div>
- </section>
-
- <button id="spin">🍾 Крутить бутылочку</button>
- <button class="secondary" id="leave">Выйти из комнаты</button>
+ <button class="primary" id="spin">🍾 Крутить бутылочку</button>
+ <button class="primary secondary" id="leave">Выйти из комнаты</button>
  <div class="status" id="status">Подключение...</div>
 </section>
 </main>
@@ -213,23 +148,34 @@ const PROJECT_URL="https://nazbercjykxwizvfcjug.supabase.co";
 const KEY="sb_publishable_2KDCJW1uETwld5SOBH5ztQ_oSpqZFuq";
 
 const $=id=>document.getElementById(id);
+
 let db=null,channel=null,room="",myId="",myName="";
-let spinning=false,round=0,activeRound=null,choices={},kissCounts={};
+let spinning=false,round=0,activeRound=null;
+let choices={},kissCounts={};
 let resolvedRounds=new Set(),scoredChoices=new Set();
+let playerElements=new Map();
 let countdownInterval=null,roundTimeout=null,spinAnimationTimeout=null;
 
-try{db=window.supabase.createClient(PROJECT_URL,KEY)}
-catch(e){console.error(e)}
-
-const tg=window.Telegram?.WebApp;
-tg?.ready();
-tg?.expand();
-
-if(tg?.initDataUnsafe?.user?.first_name){
- $("nickname").value=tg.initDataUnsafe.user.first_name;
+try{
+ db=window.supabase.createClient(PROJECT_URL,KEY);
+}catch(e){
+ console.error(e);
 }
 
-function status(message){$("status").textContent=message}
+const tg=window.Telegram&&window.Telegram.WebApp;
+
+if(tg){
+ tg.ready();
+ tg.expand();
+
+ if(tg.initDataUnsafe&&tg.initDataUnsafe.user&&tg.initDataUnsafe.user.first_name){
+  $("nickname").value=tg.initDataUnsafe.user.first_name;
+ }
+}
+
+function status(message){
+ $("status").textContent=message;
+}
 
 function makeCode(){
  const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -238,281 +184,354 @@ function makeCode(){
 
 function getPlayers(){
  if(!channel)return [];
+
  const all=[];
+
  Object.values(channel.presenceState()).forEach(group=>{
   group.forEach(p=>{
    if(p.name&&!all.some(x=>x.id===p.id))all.push(p);
   });
  });
- // Одинаковый порядок игроков на всех устройствах
- return all.sort((a,b)=>String(a.id).localeCompare(String(b.id)));
+
+ return all.sort((a,b)=>String(a.id).localeCompare(String(b.id))).slice(0,12);
 }
 
 function avatarContent(container,player){
  container.innerHTML="";
- const photo=player?.photo_url;
- if(photo){
+
+ if(player&&player.photo_url){
   const img=document.createElement("img");
-  img.src=photo;
-  img.onerror=()=>{container.textContent=(player.name||"?").charAt(0).toUpperCase()};
+  img.src=player.photo_url;
+  img.onerror=()=>{
+   container.textContent=(player.name||"?").charAt(0).toUpperCase();
+  };
   container.appendChild(img);
  }else{
-  container.textContent=(player?.name||"?").charAt(0).toUpperCase();
+  container.textContent=((player&&player.name)||"?").charAt(0).toUpperCase();
  }
 }
 
+/* Расстановка игроков по внешнему краю стола */
+function basePosition(index,total){
+ const angle=(-90+(360/Math.max(total,1))*index)*Math.PI/180;
+
+ return {
+  x:50+38*Math.cos(angle),
+  y:49+37*Math.sin(angle)
+ };
+}
+
+/* Отрисовка игроков без пересоздания элементов.
+   Это позволяет плавно перемещать выбранных игроков. */
 function renderPlayers(){
  const players=getPlayers();
+
  $("count").textContent="Игроки: "+players.length+"/12";
- $("players").innerHTML="";
 
- const total=Math.min(players.length,12);
- const radiusX=total>8?43:39;
- const radiusY=total>8?40:39;
+ const liveIds=new Set(players.map(p=>p.id));
 
- players.slice(0,12).forEach((p,i)=>{
-  const angle=(-90+(360/Math.max(total,1))*i)*Math.PI/180;
-  const x=50+radiusX*Math.cos(angle);
-  const y=50+radiusY*Math.sin(angle);
+ playerElements.forEach((el,id)=>{
+  if(!liveIds.has(id)){
+   el.remove();
+   playerElements.delete(id);
+  }
+ });
 
-  const el=document.createElement("div");
-  el.className="player";
-  el.style.left=x+"%";
-  el.style.top=y+"%";
-  if(activeRound&&(p.id===activeRound.pickerId||p.id===activeRound.targetId)){
-   el.classList.add("selected");
+ players.forEach((p,i)=>{
+  let el=playerElements.get(p.id);
+  let created=false;
+
+  if(!el){
+   el=document.createElement("div");
+   el.className="player";
+   el.dataset.playerId=p.id;
+
+   const avatar=document.createElement("div");
+   avatar.className="player-avatar";
+
+   const name=document.createElement("div");
+   name.className="player-name";
+
+   const meta=document.createElement("div");
+   meta.className="player-meta";
+
+   el.append(avatar,name,meta);
+   $("players").appendChild(el);
+   playerElements.set(p.id,el);
+   created=true;
   }
 
-  const avatar=document.createElement("div");
-  avatar.className="player-avatar";
-  avatarContent(avatar,p);
+  avatarContent(el.querySelector(".player-avatar"),p);
 
-  const name=document.createElement("div");
-  name.className="player-name";
-  name.textContent=p.name+(p.host?" 👑":"");
+  el.querySelector(".player-name").textContent=p.name+(p.host?" 👑":"");
+  el.querySelector(".player-meta").textContent="💋 "+(kissCounts[p.id]||0);
 
-  const meta=document.createElement("div");
-  meta.className="player-meta";
-  meta.textContent="💋 "+(kissCounts[p.id]||0);
+  const selected=!!activeRound&&(
+   p.id===activeRound.pickerId||
+   p.id===activeRound.targetId
+  );
 
-  el.append(avatar,name,meta);
-  $("players").appendChild(el);
+  el.classList.toggle("selected",selected);
+
+  const pos=selected
+   ?(p.id===activeRound.pickerId?{x:39,y:39}:{x:61,y:39})
+   :basePosition(i,players.length);
+
+  if(created){
+   const base=basePosition(i,players.length);
+
+   el.style.left=base.x+"%";
+   el.style.top=base.y+"%";
+
+   requestAnimationFrame(()=>{
+    el.style.left=pos.x+"%";
+    el.style.top=pos.y+"%";
+   });
+  }else{
+   el.style.left=pos.x+"%";
+   el.style.top=pos.y+"%";
+  }
  });
-}
-
-function setDuelAvatar(id,player){
- avatarContent($(id),player);
-}
-
-function findPlayer(id){
- return getPlayers().find(p=>p.id===id)||{name:"Игрок"};
-}
-
-function scoreKissChoice(roundId,playerId,choice){
- if(choice!==true||!activeRound||activeRound.roundId!==roundId)return;
- const key=roundId+":"+playerId;
- if(scoredChoices.has(key))return;
- scoredChoices.add(key);
-
- // Поцелуй засчитывается второму игроку.
- let receiverId=null;
- if(playerId===activeRound.pickerId)receiverId=activeRound.targetId;
- else if(playerId===activeRound.targetId)receiverId=activeRound.pickerId;
- if(!receiverId)return;
-
- kissCounts[receiverId]=(kissCounts[receiverId]||0)+1;
- renderPlayers();
 }
 
 function clearRoundTimers(){
  if(countdownInterval)clearInterval(countdownInterval);
  if(roundTimeout)clearTimeout(roundTimeout);
  if(spinAnimationTimeout)clearTimeout(spinAnimationTimeout);
+
  countdownInterval=null;
  roundTimeout=null;
  spinAnimationTimeout=null;
 }
 
 function angleToPlayer(playerId){
- const players=getPlayers().slice(0,12);
+ const players=getPlayers();
  const index=players.findIndex(p=>p.id===playerId);
+
  if(index<0)return 0;
+
  return -90+(360/Math.max(players.length,1))*index;
-}
-
-async function enterRoom(code,isHost){
- if(!db)throw new Error("Supabase не подключён.");
- myName=$("nickname").value.trim()||"Игрок";
- myId=String(tg?.initDataUnsafe?.user?.id||("guest-"+Math.random().toString(36).slice(2)));
- room=code;
-
- kissCounts={};choices={};activeRound=null;
- resolvedRounds.clear();scoredChoices.clear();
-
- $("entry").classList.add("hidden");
- $("game").classList.remove("hidden");
- $("roomCode").textContent=room;
- $("result").textContent="Крути бутылочку!";
- $("duel").classList.add("hidden");
- $("spin").disabled=false;
- status("Подключаемся...");
-
- channel=db.channel("bottle-room-"+room,{
-  config:{presence:{key:myId},broadcast:{self:false}}
- });
-
- channel.on("presence",{event:"sync"},renderPlayers);
- channel.on("broadcast",{event:"spin"},({payload})=>showSpin(payload));
- channel.on("broadcast",{event:"choice"},({payload})=>receiveChoice(payload));
- channel.on("broadcast",{event:"round-result"},({payload})=>applyResult(payload));
-
- channel.subscribe(async s=>{
-  if(s==="SUBSCRIBED"){
-   await channel.track({id:myId,name:myName,host:isHost});
-   renderPlayers();
-   status("Ты в комнате! Отправь друзьям код.");
-  }
-  if(s==="CHANNEL_ERROR"||s==="TIMED_OUT"){
-   status("Ошибка подключения. Проверь интернет.");
-  }
- });
 }
 
 function showSpin(data){
  if(!data||!data.pickerId||!data.targetId)return;
+ if(resolvedRounds.has(data.roundId))return;
+ if(activeRound&&activeRound.roundId===data.roundId)return;
+
  clearRoundTimers();
+
  activeRound=data;
  choices={};
  spinning=true;
+
  $("spin").disabled=true;
- $("duel").classList.add("hidden");
+ $("choiceButtons").classList.add("hidden");
+ $("timer").classList.add("hidden");
+ $("choiceStatus").textContent="";
+ $("result").textContent="Бутылочка крутится...";
 
  renderPlayers();
 
  const bottle=$("bottle");
+
  bottle.classList.remove("spinning");
  bottle.style.transform="rotate(0deg)";
  void bottle.offsetWidth;
  bottle.classList.add("spinning");
- $("result").textContent="Бутылочка крутится...";
-
- $("pickerName").textContent=data.pickerName;
- $("targetName").textContent=data.targetName;
- setDuelAvatar("pickerAvatar",findPlayer(data.pickerId));
- setDuelAvatar("targetAvatar",findPlayer(data.targetId));
- $("pickerStatus").textContent="Ожидание";
- $("targetStatus").textContent="Ожидание";
- $("choiceButtons").classList.add("hidden");
 
  spinAnimationTimeout=setTimeout(()=>{
   if(!activeRound||activeRound.roundId!==data.roundId)return;
+
   bottle.classList.remove("spinning");
 
-  // Направляем бутылку точно на выбранного игрока.
-  const angle=angleToPlayer(data.targetId);
-  bottle.style.transform="rotate("+(angle+45)+"deg)";
+  /* Поворачиваем бутылку в сторону выбранного игрока */
+  bottle.style.transform="rotate("+(angleToPlayer(data.targetId)+90)+"deg)";
 
   $("result").textContent="💋 Выбраны два игрока!";
-  $("duel").classList.remove("hidden");
+  $("timer").classList.remove("hidden");
+
   spinning=false;
+
   renderPlayers();
   updateChoiceUI();
   startCountdown(data);
+
  },2200);
 }
 
 function startCountdown(data){
  function tick(){
   if(!activeRound||activeRound.roundId!==data.roundId)return;
+
   const left=Math.max(0,Math.ceil((data.endsAt-Date.now())/1000));
+
   $("timer").textContent=left;
-  if(left===0&&myId===data.pickerId)resolveRound(true);
+
+  if(left===0&&myId===data.pickerId){
+   resolveRound(true);
+  }
  }
+
  tick();
- countdownInterval=setInterval(tick,250);
+
+ countdownInterval=setInterval(tick,200);
+
  if(myId===data.pickerId){
-  roundTimeout=setTimeout(()=>resolveRound(true),Math.max(0,data.endsAt-Date.now()));
+  roundTimeout=setTimeout(
+   ()=>resolveRound(true),
+   Math.max(0,data.endsAt-Date.now())
+  );
  }
 }
 
 function updateChoiceUI(){
  if(!activeRound)return;
+
  const a=choices[activeRound.pickerId];
  const b=choices[activeRound.targetId];
- $("pickerStatus").textContent=a===true?"💚 Поцелует":a===false?"❌ Отказался":"Ожидает";
- $("targetStatus").textContent=b===true?"💚 Поцелует":b===false?"❌ Отказался":"Ожидает";
 
- const participant=myId===activeRound.pickerId||myId===activeRound.targetId;
+ const fmt=v=>
+  v===true?"💚 Поцелуй":
+  v===false?"❌ Отказ":
+  "Ожидание ответа";
+
+ $("choiceStatus").textContent=
+  activeRound.pickerName+": "+fmt(a)+
+  "  ·  "+
+  activeRound.targetName+": "+fmt(b);
+
+ const participant=
+  myId===activeRound.pickerId||
+  myId===activeRound.targetId;
+
  const chosen=choices[myId]!==undefined;
- if(participant&&!chosen){
+
+ if(participant&&!chosen&&Date.now()<activeRound.endsAt){
   $("choiceButtons").classList.remove("hidden");
-  $("duelHint").textContent="Выбери свой ответ";
+  $("hint").textContent="Выбери: отказаться или поцеловать";
  }else{
   $("choiceButtons").classList.add("hidden");
-  $("duelHint").textContent=participant
-   ?"Твой ответ принят. Ждём второго игрока..."
-   :"Игроки выбирают...";
+  $("hint").textContent=participant
+   ?"Твой ответ принят"
+   :"Игроки выбирают ответ";
  }
 }
 
+/* Каждый нажатый поцелуй сразу засчитывается другому игроку */
+function scoreKiss(roundId,playerId,choice){
+ if(choice!==true)return;
+
+ const key=roundId+":"+playerId;
+
+ if(scoredChoices.has(key))return;
+
+ scoredChoices.add(key);
+
+ if(!activeRound||activeRound.roundId!==roundId)return;
+
+ let receiverId=null;
+
+ if(playerId===activeRound.pickerId){
+  receiverId=activeRound.targetId;
+ }else if(playerId===activeRound.targetId){
+  receiverId=activeRound.pickerId;
+ }
+
+ if(!receiverId)return;
+
+ kissCounts[receiverId]=(kissCounts[receiverId]||0)+1;
+
+ renderPlayers();
+}
+
 async function selectChoice(value){
- if(!activeRound)return;
+ if(!activeRound||!channel)return;
+
  if(myId!==activeRound.pickerId&&myId!==activeRound.targetId)return;
+
  if(choices[myId]!==undefined||Date.now()>=activeRound.endsAt)return;
 
+ const data={
+  roundId:activeRound.roundId,
+  playerId:myId,
+  choice:value
+ };
+
  choices[myId]=value;
- scoreKissChoice(activeRound.roundId,myId,value);
+
+ scoreKiss(data.roundId,myId,value);
  updateChoiceUI();
 
  await channel.send({
-  type:"broadcast",event:"choice",
-  payload:{roundId:activeRound.roundId,playerId:myId,choice:value}
+  type:"broadcast",
+  event:"choice",
+  payload:data
  });
- if(myId===activeRound.pickerId)resolveRound(false);
+
+ if(myId===activeRound.pickerId){
+  resolveRound(false);
+ }
 }
 
 function receiveChoice(data){
  if(!activeRound||!data||data.roundId!==activeRound.roundId)return;
+
+ if(data.playerId!==activeRound.pickerId&&data.playerId!==activeRound.targetId)return;
+
+ if(choices[data.playerId]!==undefined)return;
+
  choices[data.playerId]=data.choice;
- scoreKissChoice(data.roundId,data.playerId,data.choice);
+
+ scoreKiss(data.roundId,data.playerId,data.choice);
  updateChoiceUI();
- if(myId===activeRound.pickerId)resolveRound(false);
+
+ if(myId===activeRound.pickerId){
+  resolveRound(false);
+ }
 }
 
 async function resolveRound(timedOut){
  if(!activeRound||myId!==activeRound.pickerId)return;
  if(resolvedRounds.has(activeRound.roundId))return;
 
- const pickerChoice=choices[activeRound.pickerId];
- const targetChoice=choices[activeRound.targetId];
- if(!timedOut&&(pickerChoice===undefined||targetChoice===undefined))return;
+ const a=choices[activeRound.pickerId];
+ const b=choices[activeRound.targetId];
 
- clearRoundTimers();
+ if(!timedOut&&(a===undefined||b===undefined))return;
+
  const payload={
   roundId:activeRound.roundId,
   pickerId:activeRound.pickerId,
   targetId:activeRound.targetId,
   pickerName:activeRound.pickerName,
   targetName:activeRound.targetName,
-  pickerChoice,targetChoice,
-  mutual:pickerChoice===true&&targetChoice===true,
+  pickerChoice:a,
+  targetChoice:b,
   timedOut
  };
+
  applyResult(payload);
- await channel.send({type:"broadcast",event:"round-result",payload});
+
+ await channel.send({
+  type:"broadcast",
+  event:"round-result",
+  payload
+ });
 }
 
 function applyResult(data){
- if(!data?.roundId||resolvedRounds.has(data.roundId))return;
+ if(!data||!data.roundId||resolvedRounds.has(data.roundId))return;
+
  resolvedRounds.add(data.roundId);
+
  clearRoundTimers();
 
  if(data.pickerChoice===true&&data.targetChoice===true){
   $("result").textContent="💋 Взаимный поцелуй!";
  }else if(data.pickerChoice===true&&data.targetChoice===false){
-  $("result").textContent=data.pickerName+" поцеловал(а) "+data.targetName+"!";
+  $("result").textContent=data.pickerName+" выбрал(а) поцелуй!";
  }else if(data.pickerChoice===false&&data.targetChoice===true){
-  $("result").textContent=data.targetName+" поцеловал(а) "+data.pickerName+"!";
+  $("result").textContent=data.targetName+" выбрал(а) поцелуй!";
  }else if(data.pickerChoice===true){
   $("result").textContent=data.pickerName+" выбрал(а) поцелуй!";
  }else if(data.targetChoice===true){
@@ -520,67 +539,171 @@ function applyResult(data){
  }else if(data.timedOut){
   $("result").textContent="⏰ Время вышло!";
  }else{
-  $("result").textContent="Поцелуй не состоялся.";
+  $("result").textContent="Оба отказались от поцелуя.";
  }
 
- $("duelHint").textContent="Раунд завершён";
  $("choiceButtons").classList.add("hidden");
- $("timer").textContent="0";
+ $("timer").classList.add("hidden");
+ $("choiceStatus").textContent="";
+
  $("spin").disabled=false;
+
  activeRound=null;
  choices={};
+ spinning=false;
+
+ /* После окончания раунда игроки возвращаются на места */
  renderPlayers();
+
+ $("hint").textContent="Крути бутылочку для следующего раунда";
+}
+
+async function enterRoom(code,isHost){
+ if(!db){
+  throw new Error("Не загрузилась библиотека Supabase. Обнови страницу.");
+ }
+
+ myName=$("nickname").value.trim()||"Игрок";
+
+ myId=String(
+  tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user
+   ?tg.initDataUnsafe.user.id
+   :"guest-"+Math.random().toString(36).slice(2)
+ );
+
+ room=code;
+
+ kissCounts={};
+ choices={};
+ activeRound=null;
+
+ resolvedRounds.clear();
+ scoredChoices.clear();
+ playerElements.clear();
+
+ $("entry").classList.add("hidden");
+ $("game").classList.remove("hidden");
+
+ $("roomCode").textContent=room;
+ $("result").textContent="Крути бутылочку!";
+ $("spin").disabled=false;
+
+ status("Подключаемся...");
+
+ channel=db.channel("bottle-room-"+room,{
+  config:{
+   presence:{key:myId},
+   broadcast:{self:false}
+  }
+ });
+
+ channel.on("presence",{event:"sync"},renderPlayers);
+
+ channel.on("broadcast",{event:"spin"},({payload})=>{
+  showSpin(payload);
+ });
+
+ channel.on("broadcast",{event:"choice"},({payload})=>{
+  receiveChoice(payload);
+ });
+
+ channel.on("broadcast",{event:"round-result"},({payload})=>{
+  applyResult(payload);
+ });
+
+ channel.subscribe(async s=>{
+  if(s==="SUBSCRIBED"){
+   await channel.track({
+    id:myId,
+    name:myName,
+    host:isHost
+   });
+
+   renderPlayers();
+   status("Ты в комнате! Отправь друзьям код.");
+  }else if(s==="CHANNEL_ERROR"||s==="TIMED_OUT"){
+   status("Ошибка подключения. Проверь интернет и настройки Supabase.");
+  }
+ });
 }
 
 $("create").onclick=async()=>{
  $("create").disabled=true;
+
  try{
   await enterRoom(makeCode(),true);
  }catch(e){
   console.error(e);
+
   alert("Не удалось создать комнату: "+(e.message||e));
+
   $("entry").classList.remove("hidden");
   $("game").classList.add("hidden");
- }finally{$("create").disabled=false}
+ }finally{
+  $("create").disabled=false;
+ }
 };
 
 $("join").onclick=async()=>{
  const code=$("roomInput").value.trim().toUpperCase();
- if(code.length!==6){alert("Введи шестизначный код");return}
- try{await enterRoom(code,false)}
- catch(e){console.error(e);alert("Не удалось войти: "+(e.message||e))}
+
+ if(code.length!==6){
+  alert("Введи шестизначный код");
+  return;
+ }
+
+ try{
+  await enterRoom(code,false);
+ }catch(e){
+  console.error(e);
+  alert("Не удалось войти: "+(e.message||e));
+ }
 };
 
 $("spin").onclick=async()=>{
  if(!channel||spinning||activeRound)return;
+
  const players=getPlayers();
+
  if(players.length<2){
   $("result").textContent="Нужно минимум 2 игрока!";
   return;
  }
+
  if(players.length>12){
   $("result").textContent="За столом максимум 12 игроков.";
   return;
  }
 
  const others=players.filter(p=>p.id!==myId);
+
  if(!others.length){
   $("result").textContent="Не удалось выбрать второго игрока.";
   return;
  }
 
  const target=others[Math.floor(Math.random()*others.length)];
+
  const data={
-  pickerId:myId,pickerName:myName,
-  targetId:target.id,targetName:target.name,
+  pickerId:myId,
+  pickerName:myName,
+  targetId:target.id,
+  targetName:target.name,
   roundId:myId+"-"+Date.now()+"-"+(++round),
-  // 2.2 секунды вращение + 10 секунд на выбор
   endsAt:Date.now()+12200
  };
 
  showSpin(data);
- const result=await channel.send({type:"broadcast",event:"spin",payload:data});
- if(result!=="ok")status("Не удалось отправить результат. Попробуй ещё раз.");
+
+ const sent=await channel.send({
+  type:"broadcast",
+  event:"spin",
+  payload:data
+ });
+
+ if(sent!=="ok"){
+  status("Не удалось отправить вращение. Попробуй ещё раз.");
+ }
 };
 
 $("kiss").onclick=()=>selectChoice(true);
@@ -590,20 +713,40 @@ $("copy").onclick=async()=>{
  try{
   await navigator.clipboard.writeText(room);
   $("copy").textContent="Код скопирован!";
- }catch(e){$("copy").textContent="Код: "+room}
+ }catch(e){
+  $("copy").textContent="Код: "+room;
+ }
 };
 
 $("leave").onclick=async()=>{
  clearRoundTimers();
- if(channel&&db){await db.removeChannel(channel);channel=null}
+
+ if(channel&&db){
+  await db.removeChannel(channel);
+  channel=null;
+ }
+
  $("game").classList.add("hidden");
  $("entry").classList.remove("hidden");
+
  $("players").innerHTML="";
+ playerElements.clear();
+
  $("result").textContent="Крути бутылочку!";
- $("duel").classList.add("hidden");
  $("spin").disabled=false;
- room="";myId="";activeRound=null;choices={};
- kissCounts={};resolvedRounds.clear();scoredChoices.clear();
+
+ $("choiceButtons").classList.add("hidden");
+ $("timer").classList.add("hidden");
+
+ room="";
+ myId="";
+ activeRound=null;
+ choices={};
+ kissCounts={};
+
+ resolvedRounds.clear();
+ scoredChoices.clear();
+
  spinning=false;
 };
 </script>
