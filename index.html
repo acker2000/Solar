@@ -12,7 +12,7 @@ body{margin:0;background:#101820;color:white;font-family:Arial;overflow:hidden}
 #game{position:fixed;inset:0}
 #ui{position:fixed;inset:0;pointer-events:none}
 .top{display:flex;justify-content:space-between;gap:5px;padding:8px}
-.stat{background:#142b35eF;border:1px solid #42606a;border-radius:10px;padding:8px;font-size:11px;min-width:30%;box-shadow:0 3px 12px #0005}
+.stat{background:#142b35ef;border:1px solid #42606a;border-radius:10px;padding:8px;font-size:11px;min-width:30%;box-shadow:0 3px 12px #0005}
 .stat b{display:block;font-size:15px;color:#7fffc0;margin-top:4px}
 #panel{position:absolute;left:9px;top:75px;background:#142b35df;padding:9px;border-radius:9px;font-size:11px;line-height:1.7}
 #bottom{position:absolute;bottom:0;left:0;right:0;padding:10px;background:linear-gradient(transparent,#07131af5 18%);pointer-events:auto}
@@ -31,11 +31,14 @@ button b{display:block;color:#7fffc0;margin-top:4px}
  <div class="top">
   <div class="stat">ДЕНЬ<b id="day">1</b></div>
   <div class="stat">ДЕНЬГИ<b id="money">₴100 000</b></div>
-  <div class="stat">МОЩНОСТЬ<b id="power">0 кВт</b></div>
+  <div class="stat">ТЕКУЩАЯ МОЩНОСТЬ<b id="power">0.00 кВт</b></div>
  </div>
  <div id="panel">
   🕒 Киев: <span id="clock">00:00</span><br>
   🌤 <span id="weather">Ясно</span><br>
+  🔋 Панели: <span id="dcPower">0.00 кВт</span><br>
+  ⚡ После инвертора: <span id="acPower">0.00 кВт</span><br>
+  🔌 В сеть: <span id="gridPower">0.00 кВт</span><br>
   ⚡ Выработка: <span id="energy">0 кВт·ч</span><br>
   💰 Продано: <span id="income">₴0</span><br>
   ☀️ Солнце: <span id="sunstate">Ночь</span>
@@ -65,7 +68,7 @@ button b{display:block;color:#7fffc0;margin-top:4px}
 </div>
 
 <script>
-/* ---------- СОХРАНЕНИЕ И ВРЕМЯ ---------- */
+/* СОХРАНЕНИЕ И КИЕВСКОЕ ВРЕМЯ */
 const SAVE_KEY="solar_tycoon_kyiv_v2";
 
 function kyivParts(timestamp){
@@ -87,10 +90,16 @@ function weatherForDay(d){
  const types=["Ясно","Переменная облачность","Облачно","Дождь"];
  return types[(d*17+Math.floor(d/3)*7)%types.length];
 }
+
 function weatherFactor(w){
- return {"Ясно":1,"Переменная облачность":.75,
- "Облачно":.48,"Дождь":.25}[w]||1;
+ return {
+  "Ясно":1,
+  "Переменная облачность":.75,
+  "Облачно":.48,
+  "Дождь":.25
+ }[w]||1;
 }
+
 function sunlight(hour){
  return Math.max(0,Math.sin(Math.PI*(hour-6)/12));
 }
@@ -119,15 +128,100 @@ if(!state.lastKyivDate)state.lastKyivDate=kyivParts(Date.now()).date;
 if(!state.weather)state.weather=weatherForDay(state.day);
 
 function save(){
- try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));}catch(e){}
+ try{
+  localStorage.setItem(SAVE_KEY,JSON.stringify(state));
+ }catch(e){}
 }
 
-/* ---------- 3D СЦЕНА ---------- */
+/* РЕАЛИСТИЧНАЯ ДИНАМИКА СОЛНЕЧНОЙ МОЩНОСТИ */
+
+function getSolarOutput(timestamp=Date.now()){
+ const p=kyivParts(timestamp);
+ const hour=p.hour+p.minute/60+p.second/3600;
+
+ const date=new Date(Date.UTC(p.year,p.month-1,p.day));
+ const yearStart=new Date(Date.UTC(p.year,0,1));
+ const dayOfYear=Math.floor((date-yearStart)/86400000)+1;
+
+ const season=Math.cos(2*Math.PI*(dayOfYear-172)/365.25);
+ const sunrise=6.5-2.05*season;
+ const sunset=18.5+2.55*season;
+
+ let sunFactor=0;
+
+ if(hour>sunrise&&hour<sunset){
+  const phase=(hour-sunrise)/(sunset-sunrise);
+  sunFactor=Math.pow(Math.max(0,Math.sin(Math.PI*phase)),1.25);
+ }
+
+ // Ночью солнечная генерация всегда равна нулю.
+ if(sunFactor<=0||state.panels.length===0){
+  return {dc:0,ac:0,grid:0};
+ }
+
+ // Плавное движение облаков.
+ const wave1=(Math.sin(timestamp/210000)+1)/2;
+ const wave2=(Math.sin(timestamp/530000+1.7)+1)/2;
+ const cloudMotion=wave1*.58+wave2*.42;
+
+ let cloud=1;
+
+ if(state.weather==="Ясно"){
+  cloud=.94+.06*cloudMotion;
+ }
+ else if(state.weather==="Переменная облачность"){
+  cloud=.34+.64*cloudMotion;
+ }
+ else if(state.weather==="Облачно"){
+  cloud=.25+.27*cloudMotion;
+ }
+ else if(state.weather==="Дождь"){
+  cloud=.07+.24*cloudMotion;
+ }
+
+ // Температура и потери эффективности.
+ const seasonalTemp=10+12*season;
+ const daytimeHeat=Math.max(
+  0,
+  Math.sin(Math.PI*(hour-sunrise)/(sunset-sunrise))
+ )*9;
+
+ const temperature=seasonalTemp+daytimeHeat;
+ const temperatureFactor=Math.max(
+  .86,
+  1-Math.max(0,temperature-25)*.004
+ );
+
+ // Общая мощность установленных панелей.
+ const panelKw=state.panels.reduce(
+  (sum,panel)=>sum+panel.watt,0
+ )/1000;
+
+ // Суммарная мощность инверторов.
+ const inverterKw=state.inverters.reduce(
+  (sum,item)=>sum+item.kw,0
+ );
+
+ const dc=panelKw*sunFactor*cloud*temperatureFactor;
+
+ // Ограничение инвертора и его КПД.
+ const ac=Math.min(dc,inverterKw)*.97;
+
+ // Ограничение трансформатора.
+ const grid=state.transformer?Math.min(ac,100):0;
+
+ return {dc,ac,grid};
+}
+
+/* 3D СЦЕНА */
+
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x9bc8e5);
 scene.fog=new THREE.Fog(0x9bc8e5,45,110);
 
-const camera=new THREE.PerspectiveCamera(48,innerWidth/innerHeight,.1,300);
+const camera=new THREE.PerspectiveCamera(
+ 48,innerWidth/innerHeight,.1,300
+);
 camera.position.set(13,15,20);
 camera.lookAt(0,0,0);
 
@@ -139,7 +233,9 @@ renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 renderer.outputEncoding=THREE.sRGBEncoding;
 document.getElementById("game").appendChild(renderer.domElement);
 
-const ambient=new THREE.HemisphereLight(0xd8edff,0x52613c,1.3);
+const ambient=new THREE.HemisphereLight(
+ 0xd8edff,0x52613c,1.3
+);
 scene.add(ambient);
 
 const sun=new THREE.DirectionalLight(0xffe6b5,2);
@@ -161,20 +257,26 @@ function material(color,rough=.8,metal=0){
   color,roughness:rough,metalness:metal
  });
 }
+
 const grassMat=material(0x527b3c);
 const metalMat=material(0x87949a,.35,.8);
 const glassMat=material(0x102d49,.25,.65);
 
 function box(w,h,d,mat,x,y,z,parent=scene){
- const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
+ const m=new THREE.Mesh(
+  new THREE.BoxGeometry(w,h,d),mat
+ );
  m.position.set(x,y,z);
  m.castShadow=true;
  m.receiveShadow=true;
  parent.add(m);
  return m;
 }
+
 function cylinder(r1,r2,h,mat,x,y,z,parent=scene){
- const m=new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,h,12),mat);
+ const m=new THREE.Mesh(
+  new THREE.CylinderGeometry(r1,r2,h,12),mat
+ );
  m.position.set(x,y,z);
  m.castShadow=true;
  parent.add(m);
@@ -190,12 +292,15 @@ ground.rotation.x=-Math.PI/2;
 ground.receiveShadow=true;
 scene.add(ground);
 
-const grid=new THREE.GridHelper(24,24,0x8b9d72,0x71895d);
+const grid=new THREE.GridHelper(
+ 24,24,0x8b9d72,0x71895d
+);
 grid.position.y=.025;
 scene.add(grid);
 
 /* Дорога */
 box(3,.035,28,material(0x777a72),-9,.02,0);
+
 for(let z=-12;z<13;z+=2){
  box(.12,.04,.8,material(0xe2d6a2),-9,.05,z);
 }
@@ -203,10 +308,16 @@ for(let z=-12;z<13;z+=2){
 /* Ограждение */
 function makeFence(){
  const f=material(0x777f7c,.65,.7);
+
  for(let i=-7;i<=7;i++){
-  for(const z of [-7,7])cylinder(.045,.045,1.2,f,i,.6,z);
-  for(const x of [-7,7])cylinder(.045,.045,1.2,f,x,.6,i);
+  for(const z of [-7,7]){
+   cylinder(.045,.045,1.2,f,i,.6,z);
+  }
+  for(const x of [-7,7]){
+   cylinder(.045,.045,1.2,f,x,.6,i);
+  }
  }
+
  for(const y of [.35,.85]){
   box(14,.035,.035,f,0,y,-7);
   box(14,.035,.035,f,0,y,7);
@@ -219,11 +330,16 @@ makeFence();
 /* Деревья */
 function makeTree(x,z,s=1){
  const g=new THREE.Group();
- cylinder(.13,.2,1.1,material(0x60472b),0,.55,0,g);
+
+ cylinder(
+  .13,.2,1.1,material(0x60472b),0,.55,0,g
+ );
+
  const leaves=new THREE.Mesh(
   new THREE.ConeGeometry(.75,1.8,7),
   material(0x285d35)
  );
+
  leaves.position.y=1.8;
  leaves.castShadow=true;
  g.add(leaves);
@@ -231,6 +347,7 @@ function makeTree(x,z,s=1){
  g.scale.setScalar(s);
  scene.add(g);
 }
+
 for(let i=0;i<22;i++){
  const x=(i%11)*3-15;
  makeTree(x,-12-(i%3)*2,.7+(i%4)*.12);
@@ -239,6 +356,7 @@ for(let i=0;i<22;i++){
 
 /* Звёзды */
 const starPositions=[];
+
 for(let i=0;i<450;i++){
  starPositions.push(
   (Math.random()-.5)*150,
@@ -246,16 +364,24 @@ for(let i=0;i<450;i++){
   (Math.random()-.5)*150
  );
 }
+
 const starGeometry=new THREE.BufferGeometry();
+
 starGeometry.setAttribute(
- "position",new THREE.Float32BufferAttribute(starPositions,3)
+ "position",
+ new THREE.Float32BufferAttribute(starPositions,3)
 );
+
 const stars=new THREE.Points(
  starGeometry,
  new THREE.PointsMaterial({
-  color:0xffffff,size:.18,transparent:true,opacity:0
+  color:0xffffff,
+  size:.18,
+  transparent:true,
+  opacity:0
  })
 );
+
 scene.add(stars);
 
 /* Луна */
@@ -275,10 +401,12 @@ scene.add(sunBall);
 
 /* Фонари */
 const lamps=[];
+
 for(const x of [-6,6]){
  for(const z of [-6,0,6]){
   cylinder(.055,.08,2.7,metalMat,x,1.35,z);
   box(.65,.12,.35,material(0x293b40),x,2.65,z);
+
   const light=new THREE.PointLight(0xffd58a,0,9);
   light.position.set(x,2.5,z);
   scene.add(light);
@@ -286,7 +414,8 @@ for(const x of [-6,6]){
  }
 }
 
-/* ---------- ОБОРУДОВАНИЕ ---------- */
+/* ОБОРУДОВАНИЕ */
+
 function makePanel(x,z,watt){
  const g=new THREE.Group();
  const frame=material(0x9aa4a8,.35,.8);
@@ -297,14 +426,18 @@ function makePanel(x,z,watt){
 
  for(let r=0;r<6;r++){
   for(let c=0;c<10;c++){
-   box(.174,.012,.145,cells,
-    -.82+c*.182,.936,-.405+r*.162,g);
+   box(
+    .174,.012,.145,cells,
+    -.82+c*.182,.936,-.405+r*.162,g
+   );
   }
  }
+
  box(2.05,.07,.09,metalMat,0,.65,-.42,g);
  box(2.05,.07,.09,metalMat,0,.65,.42,g);
  cylinder(.045,.045,.85,metalMat,-.65,.4,0,g);
  cylinder(.045,.045,.85,metalMat,.65,.4,0,g);
+
  g.position.set(x,0,z);
  g.rotation.x=-.18;
  scene.add(g);
@@ -313,13 +446,30 @@ function makePanel(x,z,watt){
 
 function makeInverter(x,z){
  const g=new THREE.Group();
- box(.85,1.15,.48,material(0xc5cdd0,.6,.45),0,.58,0,g);
+
+ box(
+  .85,1.15,.48,
+  material(0xc5cdd0,.6,.45),
+  0,.58,0,g
+ );
+
  box(.62,.24,.025,material(0x172d34),0,.86,.25,g);
  box(.27,.12,.02,material(0x40db8a,.2),0,.86,.27,g);
+
  for(let i=0;i<7;i++){
-  box(.55,.025,.025,material(0x6b777b),0,.42+i*.065,.25,g);
+  box(
+   .55,.025,.025,
+   material(0x6b777b),
+   0,.42+i*.065,.25,g
+  );
  }
- box(.12,.18,.06,material(0x333d40),.28,.18,.25,g);
+
+ box(
+  .12,.18,.06,
+  material(0x333d40),
+  .28,.18,.25,g
+ );
+
  g.position.set(x,0,z);
  scene.add(g);
  return g;
@@ -327,16 +477,33 @@ function makeInverter(x,z){
 
 function makeTransformer(x,z){
  const g=new THREE.Group();
- box(1.8,1.2,1.25,material(0x7c898c,.55,.6),0,.75,0,g);
+
+ box(
+  1.8,1.2,1.25,
+  material(0x7c898c,.55,.6),
+  0,.75,0,g
+ );
+
  for(let s of [-1,1]){
   for(let i=0;i<8;i++){
-   box(.07,.95,.08,metalMat,s*.97,.75,-.48+i*.135,g);
+   box(
+    .07,.95,.08,metalMat,
+    s*.97,.75,-.48+i*.135,g
+   );
   }
  }
+
  for(let i=0;i<3;i++){
-  cylinder(.12,.12,.65,material(0xddd5b4,.3),-.5+i*.5,1.65,0,g);
-  cylinder(.04,.04,.5,material(0x333d40,.3),-.5+i*.5,2.15,0,g);
+  cylinder(
+   .12,.12,.65,material(0xddd5b4,.3),
+   -.5+i*.5,1.65,0,g
+  );
+  cylinder(
+   .04,.04,.5,material(0x333d40,.3),
+   -.5+i*.5,2.15,0,g
+  );
  }
+
  g.position.set(x,0,z);
  scene.add(g);
  return g;
@@ -344,35 +511,61 @@ function makeTransformer(x,z){
 
 function makeBattery(x,z){
  const g=new THREE.Group();
- box(2.3,1.5,1.15,material(0xbac4c5,.65,.4),0,.8,0,g);
+
+ box(
+  2.3,1.5,1.15,
+  material(0xbac4c5,.65,.4),
+  0,.8,0,g
+ );
+
  for(let i=0;i<12;i++){
-  box(.035,.85,.03,material(0x606e70),-.85+i*.155,.8,.59,g);
+  box(
+   .035,.85,.03,
+   material(0x606e70),
+   -.85+i*.155,.8,.59,g
+  );
  }
- box(.45,.35,.03,material(0x253b42),.7,1.2,.59,g);
+
+ box(
+  .45,.35,.03,
+  material(0x253b42),
+  .7,1.2,.59,g
+ );
+
  g.position.set(x,0,z);
  scene.add(g);
  return g;
 }
 
 let placed=[];
+
 function rebuild(){
  placed.forEach(o=>scene.remove(o));
  placed=[];
+
  state.panels.forEach(p=>{
   placed.push(makePanel(p.x,p.z,p.watt));
  });
+
  state.inverters.forEach((v,i)=>{
   placed.push(makeInverter(
    5.5+(i%2)*1.2,
    -5+Math.floor(i/2)*1.3
   ));
  });
- if(state.transformer)placed.push(makeTransformer(5.7,2));
- if(state.battery)placed.push(makeBattery(5.5,5));
+
+ if(state.transformer){
+  placed.push(makeTransformer(5.7,2));
+ }
+
+ if(state.battery){
+  placed.push(makeBattery(5.5,5));
+ }
 }
 rebuild();
 
-/* ---------- КАМЕРА И УПРАВЛЕНИЕ ---------- */
+/* КАМЕРА И УПРАВЛЕНИЕ */
+
 let drag=false,lastX=0,lastY=0;
 let targetX=0,targetZ=0;
 let pinch=0;
@@ -383,18 +576,27 @@ renderer.domElement.addEventListener("pointerdown",e=>{
  lastX=e.clientX;
  lastY=e.clientY;
 });
+
 renderer.domElement.addEventListener("pointermove",e=>{
  if(!drag)return;
+
  const dx=e.clientX-lastX;
  const dy=e.clientY-lastY;
+
  targetX-=dx*.025;
  targetZ+=dy*.025;
+
  targetX=Math.max(-12,Math.min(12,targetX));
  targetZ=Math.max(-12,Math.min(12,targetZ));
+
  lastX=e.clientX;
  lastY=e.clientY;
 });
-function stopDrag(){drag=false}
+
+function stopDrag(){
+ drag=false;
+}
+
 renderer.domElement.addEventListener("pointerup",stopDrag);
 renderer.domElement.addEventListener("pointercancel",stopDrag);
 
@@ -413,18 +615,24 @@ renderer.domElement.addEventListener("touchmove",e=>{
    e.touches[0].clientX-e.touches[1].clientX,
    e.touches[0].clientY-e.touches[1].clientY
   );
+
   if(pinch>0){
    camera.position.multiplyScalar(pinch/n);
-   camera.position.y=Math.max(7,Math.min(35,camera.position.y));
+   camera.position.y=Math.max(
+    7,Math.min(35,camera.position.y)
+   );
   }
+
   pinch=n;
  }
 },{passive:true});
 
-/* ---------- ДЕНЬ И НОЧЬ ---------- */
+/* ДЕНЬ И НОЧЬ */
+
 function updateLighting(){
  const p=kyivParts(Date.now());
  const time=p.hour+p.minute/60+p.second/3600;
+
  const daylight=sunlight(time);
  const night=1-daylight;
 
@@ -437,8 +645,14 @@ function updateLighting(){
  const sunsetSky=new THREE.Color(0xe68c58);
 
  let sky=nightSky.clone().lerp(daySky,daylight);
- if(time>=5&&time<8)sky.lerp(sunsetSky,(1-lightLevel)*.25);
- if(time>=17&&time<20)sky.lerp(sunsetSky,(1-lightLevel)*.45);
+
+ if(time>=5&&time<8){
+  sky.lerp(sunsetSky,(1-lightLevel)*.25);
+ }
+
+ if(time>=17&&time<20){
+  sky.lerp(sunsetSky,(1-lightLevel)*.45);
+ }
 
  scene.background.copy(sky);
  scene.fog.color.copy(sky);
@@ -448,12 +662,15 @@ function updateLighting(){
  moonLight.intensity=.04+night*.28;
 
  const angle=(time-6)/12*Math.PI;
+
  sunBall.position.set(
   -Math.cos(angle)*35,
   3+daylight*25,
   5
  );
+
  sunBall.visible=daylight>.02;
+
  sunBall.material.color.setHex(
   time<8||time>16?0xffa75c:0xffdf88
  );
@@ -463,12 +680,16 @@ function updateLighting(){
   16+night*12,
   -20
  );
+
  moon.visible=night>.15;
  stars.material.opacity=night;
 
- lamps.forEach(l=>l.intensity=night>.45?1.8:0);
+ lamps.forEach(l=>{
+  l.intensity=night>.45?1.8:0;
+ });
 
  let label="Ночь";
+
  if(time>=5&&time<7)label="Рассвет";
  else if(time>=7&&time<18)label="День";
  else if(time>=18&&time<20)label="Закат";
@@ -476,6 +697,7 @@ function updateLighting(){
  document.getElementById("clock").textContent=
   String(p.hour).padStart(2,"0")+":"+
   String(p.minute).padStart(2,"0");
+
  document.getElementById("sunstate").textContent=label;
 }
 
@@ -489,6 +711,7 @@ function animate(){
 
  renderer.render(scene,camera);
 }
+
 animate();
 
 addEventListener("resize",()=>{
@@ -497,25 +720,37 @@ addEventListener("resize",()=>{
  renderer.setSize(innerWidth,innerHeight);
 });
 
-/* ---------- ЭКОНОМИКА ---------- */
+/* ЭКОНОМИКА */
+
 function getProduction(){
- const dc=state.panels.reduce((s,p)=>s+p.watt,0)/1000;
- const inverter=state.inverters.reduce((s,i)=>s+i.kw,0);
- return {dc,inverter,ac:Math.min(dc,inverter)};
+ const dc=state.panels.reduce(
+  (s,p)=>s+p.watt,0
+ )/1000;
+
+ const inverter=state.inverters.reduce(
+  (s,i)=>s+i.kw,0
+ );
+
+ return {
+  dc,
+  inverter,
+  ac:Math.min(dc,inverter)
+ };
 }
 
 function processTime(){
  const now=Date.now();
  let start=state.lastTime||now;
+
  if(now<start)start=now;
 
- // Обрабатываем прошедшее время небольшими отрезками,
- // включая время, когда игра была закрыта.
  const maxTime=30*24*3600000;
- if(now-start>maxTime)start=now-maxTime;
 
- const step=15*60*1000;
- const prod=getProduction();
+ if(now-start>maxTime){
+  start=now-maxTime;
+ }
+
+ const step=5*60*1000;
 
  while(start<now){
   const end=Math.min(start+step,now);
@@ -528,20 +763,21 @@ function processTime(){
    state.weather=weatherForDay(state.day);
   }
 
-  const hour=p.hour+p.minute/60;
-  const sunPower=sunlight(hour);
-  const weather=weatherFactor(state.weather);
   const hours=(end-start)/3600000;
+  const output=getSolarOutput(middle);
 
-  const generated=prod.ac*sunPower*weather*hours;
+  const generated=output.ac*hours;
+  const sold=output.grid*hours;
 
   if(generated>0){
    state.energy+=generated;
-   if(state.transformer){
-    state.money+=generated*8;
-    state.totalSold+=generated;
-   }
   }
+
+  if(sold>0){
+   state.money+=sold*8;
+   state.totalSold+=sold;
+  }
+
   start=end;
  }
 
@@ -550,78 +786,141 @@ function processTime(){
 }
 
 function updateUI(){
- const p=getProduction();
+ const live=getSolarOutput(Date.now());
+
  document.getElementById("day").textContent=state.day;
+
  document.getElementById("money").textContent=
   "₴"+Math.floor(state.money).toLocaleString("ru-RU");
+
  document.getElementById("power").textContent=
-  p.ac.toFixed(2)+" кВт";
- document.getElementById("weather").textContent=state.weather;
+  live.ac.toFixed(2)+" кВт";
+
+ document.getElementById("dcPower").textContent=
+  live.dc.toFixed(2)+" кВт";
+
+ document.getElementById("acPower").textContent=
+  live.ac.toFixed(2)+" кВт";
+
+ document.getElementById("gridPower").textContent=
+  live.grid.toFixed(2)+" кВт";
+
+ document.getElementById("weather").textContent=
+  state.weather;
+
  document.getElementById("energy").textContent=
   state.energy.toFixed(1);
+
  document.getElementById("income").textContent=
   "₴"+Math.floor(state.totalSold*8).toLocaleString("ru-RU");
 }
 
-/* ---------- ПОКУПКИ ---------- */
+/* ПОКУПКИ */
+
 function notify(t){
  const el=document.getElementById("message");
  el.textContent=t;
  el.style.display="block";
+
  clearTimeout(window.msgTimer);
- window.msgTimer=setTimeout(()=>el.style.display="none",2200);
+
+ window.msgTimer=setTimeout(()=>{
+  el.style.display="none";
+ },2200);
 }
 
 function buyPanel(watt){
- const prices={450:2000,550:2400,600:2700,700:3100};
+ const prices={
+  450:2000,
+  550:2400,
+  600:2700,
+  700:3100
+ };
+
  const price=prices[watt];
- if(state.money<price)return notify("Недостаточно денег");
+
+ if(state.money<price){
+  return notify("Недостаточно денег");
+ }
 
  const count=state.panels.length;
  const x=-5+(count%5)*2.2;
  const z=-5+Math.floor(count/5)*1.8;
- if(z>5)return notify("Место на участке закончилось");
+
+ if(z>5){
+  return notify("Место на участке закончилось");
+ }
 
  state.money-=price;
  state.panels.push({watt,x,z});
+
  rebuild();
  updateUI();
  save();
+
  notify("Установлена панель "+watt+" Вт");
 }
 
 function buyInverter(kw){
- const prices={5:8000,10:14000,30:29000,50:42000,100:70000};
+ const prices={
+  5:8000,
+  10:14000,
+  30:29000,
+  50:42000,
+  100:70000
+ };
+
  const price=prices[kw];
- if(state.money<price)return notify("Недостаточно денег");
+
+ if(state.money<price){
+  return notify("Недостаточно денег");
+ }
 
  state.money-=price;
  state.inverters.push({kw});
+
  rebuild();
  updateUI();
  save();
+
  notify("Инвертор "+kw+" кВт установлен");
 }
 
 function buyTransformer(){
- if(state.transformer)return notify("Трансформатор уже установлен");
- if(state.money<25000)return notify("Недостаточно денег");
+ if(state.transformer){
+  return notify("Трансформатор уже установлен");
+ }
+
+ if(state.money<25000){
+  return notify("Недостаточно денег");
+ }
+
  state.money-=25000;
  state.transformer=true;
+
  rebuild();
  updateUI();
  save();
+
  notify("Трансформатор подключён");
 }
 
 function buyBattery(){
- if(state.battery)return notify("Аккумулятор уже установлен");
- if(state.money<18000)return notify("Недостаточно денег");
+ if(state.battery){
+  return notify("Аккумулятор уже установлен");
+ }
+
+ if(state.money<18000){
+  return notify("Недостаточно денег");
+ }
+
  state.money-=18000;
  state.battery=true;
+
  rebuild();
  updateUI();
  save();
+
  notify("Аккумулятор установлен");
 }
 
@@ -629,12 +928,11 @@ function showHelp(){
  alert(
   "SOLAR TYCOON 3D\n\n"+
   "Время игры — киевское.\n"+
-  "Новый день начинается в 00:00.\n"+
-  "Один игровой день длится 24 часа.\n\n"+
+  "Новый день начинается в 00:00.\n\n"+
   "1. Покупай солнечные панели.\n"+
   "2. Устанавливай инверторы.\n"+
   "3. Устанавливай трансформатор.\n"+
-  "4. Электричество автоматически продаётся по ₴8 за кВт·ч.\n"+
+  "4. Электричество продаётся по ₴8 за кВт·ч.\n"+
   "5. Ночью панели не вырабатывают электричество.\n"+
   "6. Прогресс сохраняется автоматически.\n\n"+
   "Камера: один палец.\n"+
@@ -642,7 +940,8 @@ function showHelp(){
  );
 }
 
-/* ---------- ЗАПУСК ---------- */
+/* ЗАПУСК */
+
 processTime();
 updateUI();
 
