@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -9,280 +10,125 @@
 
 <style>
 *{box-sizing:border-box}
-
 body{
- margin:0;
- padding:12px 8px;
- background:#29180f;
- color:#fff;
- font-family:Arial,sans-serif;
- text-align:center
+ margin:0;padding:12px 8px;background:#29180f;color:#fff;
+ font-family:Arial,sans-serif;text-align:center
 }
-
 main{max-width:520px;margin:auto}
 h1{font-size:27px;margin:8px;text-shadow:0 2px 5px #000}
 .small{font-size:13px;color:#ffe2bd}
-
 .card{
- background:#754526;
- padding:12px;
- border-radius:16px;
- margin-top:12px;
- border:1px solid #d9a36c;
- box-shadow:0 5px 16px #130b07
+ background:#754526;padding:12px;border-radius:16px;margin-top:12px;
+ border:1px solid #d9a36c;box-shadow:0 5px 16px #130b07
 }
-
 input{
- width:100%;
- padding:14px;
- border-radius:10px;
- border:1px solid #9c6739;
- background:#fff3df;
- color:#392313;
- font-size:17px;
- margin:7px 0
+ width:100%;padding:14px;border-radius:10px;border:1px solid #9c6739;
+ background:#fff3df;color:#392313;font-size:17px;margin:7px 0
 }
-
 button{
- border:0;
- border-radius:12px;
- background:#f0a13e;
- color:#40200e;
- font-size:16px;
- font-weight:bold;
- padding:13px 10px;
- cursor:pointer
+ border:0;border-radius:12px;background:#f0a13e;color:#40200e;
+ font-size:16px;font-weight:bold;padding:13px 10px;cursor:pointer
 }
-
 button:disabled{opacity:.45}
 .primary{width:100%;margin-top:10px}
 .secondary{background:#79502d;color:white}
 .hidden{display:none!important}
-
 .table-tools{
- display:flex;
- justify-content:space-around;
- align-items:center;
- padding:7px 0 12px;
- border-bottom:1px solid #ffffff44
+ display:flex;justify-content:space-around;align-items:center;
+ padding:7px 0 12px;border-bottom:1px solid #ffffff44
 }
-
 .tool{font-size:21px}
 .tool small{display:block;font-size:10px;margin-top:3px}
-
 .table-board{
- position:relative;
- overflow:hidden;
- min-height:440px;
- padding:10px 5px 12px;
+ position:relative;overflow:hidden;min-height:440px;padding:10px 5px 12px;
  border-radius:16px;
  background:
  repeating-linear-gradient(2deg,transparent 0 22px,#75421d22 24px,#f2c08033 27px,transparent 32px),
  linear-gradient(110deg,#d99b5e,#b97138,#d99b5e);
  box-shadow:inset 0 0 22px #542b16
 }
-
 .table-info{
- display:flex;
- justify-content:space-between;
- align-items:center;
- font-size:12px;
- color:#fff0d5;
- position:relative;
- z-index:8
+ display:flex;justify-content:space-between;align-items:center;
+ font-size:12px;color:#fff0d5;position:relative;z-index:8
 }
-
 #copy{
- display:block;
- max-width:230px;
- padding:8px 12px;
- font-size:12px;
- margin:7px auto
+ display:block;max-width:230px;padding:8px 12px;
+ font-size:12px;margin:7px auto
 }
-
-.arena{
- position:relative;
- width:100%;
- height:365px;
- margin:0 auto
-}
-
+.arena{position:relative;width:100%;height:365px;margin:0 auto}
 .table-ring{
- position:absolute;
- width:min(72vw,290px);
- height:min(72vw,290px);
- max-width:290px;
- max-height:290px;
- left:50%;
- top:48%;
- transform:translate(-50%,-50%);
- border-radius:50%;
+ position:absolute;width:min(72vw,290px);height:min(72vw,290px);
+ max-width:290px;max-height:290px;left:50%;top:48%;
+ transform:translate(-50%,-50%);border-radius:50%;
  background:radial-gradient(ellipse,#784323,#60351e 70%,#4b2a19);
  border:8px solid #e0a76c;
  box-shadow:inset 0 0 25px #241208,0 4px 12px #3d1e0d
 }
-
 .bottle-wrap{
- position:absolute;
- left:50%;
- top:48%;
- width:80px;
- height:80px;
- transform:translate(-50%,-50%);
- z-index:2;
- display:grid;
- place-items:center
+ position:absolute;left:50%;top:48%;width:80px;height:80px;
+ transform:translate(-50%,-50%);z-index:2;display:grid;place-items:center
 }
-
 .bottle{
- font-size:70px;
- display:block;
- transform-origin:center center;
+ font-size:70px;display:block;transform-origin:center center;
  filter:drop-shadow(0 5px 5px #241208)
 }
-
-.bottle.spinning{
- animation:spin 2.2s cubic-bezier(.12,.72,.2,1) forwards
-}
-
+.bottle.spinning{animation:spin 2.2s cubic-bezier(.12,.72,.2,1) forwards}
 @keyframes spin{
  from{transform:rotate(0deg)}
  to{transform:rotate(1440deg)}
 }
-
-#players{
- position:absolute;
- inset:0;
- z-index:4;
- pointer-events:none
-}
-
+#players{position:absolute;inset:0;z-index:4;pointer-events:none}
 .player{
- position:absolute;
- width:72px;
- min-height:78px;
- padding:4px 3px;
- border-radius:9px;
- background:linear-gradient(145deg,#674027,#38251b);
- border:2px solid #d9a46d;
- box-shadow:0 3px 8px #542c15;
- transform:translate(-50%,-50%);
- overflow:hidden;
+ position:absolute;width:72px;min-height:78px;padding:4px 3px;
+ border-radius:9px;background:linear-gradient(145deg,#674027,#38251b);
+ border:2px solid #d9a46d;box-shadow:0 3px 8px #542c15;
+ transform:translate(-50%,-50%);overflow:hidden;
  transition:
   left .95s cubic-bezier(.22,.8,.25,1),
   top .95s cubic-bezier(.22,.8,.25,1),
-  border-color .25s,
-  box-shadow .25s;
+  border-color .25s,box-shadow .25s;
  will-change:left,top
 }
-
 .player.selected{
- border:2px solid #ffe45d;
- box-shadow:0 0 13px #ffe45d
+ border:2px solid #ffe45d;box-shadow:0 0 13px #ffe45d
 }
-
 .player-avatar{
- width:43px;
- height:43px;
- margin:auto;
- border-radius:7px;
- display:grid;
- place-items:center;
- overflow:hidden;
+ width:43px;height:43px;margin:auto;border-radius:7px;
+ display:grid;place-items:center;overflow:hidden;
  background:linear-gradient(145deg,#f0d1a4,#a86b38);
- color:#563116;
- font-size:22px;
- font-weight:bold;
- border:2px solid #f5d9ad
+ color:#563116;font-size:22px;font-weight:bold;border:2px solid #f5d9ad
 }
-
-.player-avatar img{
- width:100%;
- height:100%;
- object-fit:cover
-}
-
+.player-avatar img{width:100%;height:100%;object-fit:cover}
 .player-name{
- font-size:10px;
- margin-top:3px;
- white-space:nowrap;
- overflow:hidden;
- text-overflow:ellipsis
+ font-size:10px;margin-top:3px;white-space:nowrap;
+ overflow:hidden;text-overflow:ellipsis
 }
-
-.player-meta{
- font-size:10px;
- color:#ffe1ae;
- margin-top:2px
-}
-
+.player-meta{font-size:10px;color:#ffe1ae;margin-top:2px}
 .center-actions{
- position:absolute;
- left:50%;
- top:64%;
- transform:translateX(-50%);
- width:min(310px,92%);
- z-index:7;
- display:flex;
- gap:9px
+ position:absolute;left:50%;top:64%;transform:translateX(-50%);
+ width:min(310px,92%);z-index:7;display:flex;gap:9px
 }
-
 .center-actions button{
- flex:1;
- min-width:0;
- padding:12px 5px;
- color:white;
- font-size:14px;
- box-shadow:0 3px 8px #241208
+ flex:1;min-width:0;padding:12px 5px;color:white;
+ font-size:14px;box-shadow:0 3px 8px #241208
 }
-
 .no{background:#d94335}
 .yes{background:#83bd3e}
-
 .timer{
- position:absolute;
- left:50%;
- top:88%;
- transform:translate(-50%,-50%);
- z-index:7;
- font-size:22px;
- color:#ffe18a;
- font-weight:bold;
+ position:absolute;left:50%;top:88%;transform:translate(-50%,-50%);
+ z-index:7;font-size:22px;color:#ffe18a;font-weight:bold;
  text-shadow:0 2px 4px #241208
 }
-
 .result{
- font-size:17px;
- min-height:28px;
- font-weight:bold;
- color:#fff3d7;
- text-shadow:0 2px 3px #75401c;
- margin:0 0 3px
+ font-size:17px;min-height:28px;font-weight:bold;color:#fff3d7;
+ text-shadow:0 2px 3px #75401c;margin:0 0 3px
 }
-
 .choice-status{
- font-size:11px;
- color:#ffe5c4;
- position:absolute;
- top:57%;
- left:0;
- right:0;
- z-index:7;
- min-height:15px
+ font-size:11px;color:#ffe5c4;position:absolute;top:57%;
+ left:0;right:0;z-index:7;min-height:15px
 }
-
-.status{
- font-size:13px;
- color:#fff0d9;
- margin-top:12px
-}
-
-.hint{
- font-size:11px;
- color:#ffebce;
- margin-top:3px
-}
-
+.status{font-size:13px;color:#fff0d9;margin-top:12px}
+.hint{font-size:11px;color:#ffebce;margin-top:3px}
 @media(max-width:380px){
  .arena{height:350px}
  .player{width:66px;min-height:74px}
@@ -471,7 +317,8 @@ function renderPlayers(){
   el.querySelector(".player-name").textContent=p.name+(p.host?" 👑":"");
   el.querySelector(".player-meta").textContent="💋 "+(kissCounts[p.id]||0);
 
-  const selected=!!activeRound&&(
+  // ИСПРАВЛЕНО: выбранные игроки выделяются только после остановки бутылки.
+  const selected=!spinning&&!!activeRound&&(
    p.id===activeRound.pickerId||
    p.id===activeRound.targetId
   );
@@ -535,6 +382,7 @@ function showSpin(data){
  $("choiceStatus").textContent="";
  $("result").textContent="Бутылочка крутится...";
 
+ // Во время вращения все аватарки остаются на своих местах.
  renderPlayers();
 
  const bottle=$("bottle");
@@ -554,6 +402,7 @@ function showSpin(data){
   $("result").textContent="💋 Выбраны два игрока!";
   $("timer").classList.remove("hidden");
 
+  // Только теперь разрешаем движение выбранных аватарок.
   spinning=false;
 
   renderPlayers();
