@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -10,79 +9,286 @@
 
 <style>
 *{box-sizing:border-box}
-body{margin:0;padding:12px 8px;background:#29180f;color:#fff;font-family:Arial,sans-serif;text-align:center}
+
+body{
+ margin:0;
+ padding:12px 8px;
+ background:#29180f;
+ color:#fff;
+ font-family:Arial,sans-serif;
+ text-align:center
+}
+
 main{max-width:520px;margin:auto}
 h1{font-size:27px;margin:8px;text-shadow:0 2px 5px #000}
 .small{font-size:13px;color:#ffe2bd}
-.card{background:#754526;padding:12px;border-radius:16px;margin-top:12px;border:1px solid #d9a36c;box-shadow:0 5px 16px #130b07}
-input{width:100%;padding:14px;border-radius:10px;border:1px solid #9c6739;background:#fff3df;color:#392313;font-size:17px;margin:7px 0}
-button{border:0;border-radius:12px;background:#f0a13e;color:#40200e;font-size:16px;font-weight:bold;padding:13px 10px;cursor:pointer}
+
+.card{
+ background:#754526;
+ padding:12px;
+ border-radius:16px;
+ margin-top:12px;
+ border:1px solid #d9a36c;
+ box-shadow:0 5px 16px #130b07
+}
+
+input{
+ width:100%;
+ padding:14px;
+ border-radius:10px;
+ border:1px solid #9c6739;
+ background:#fff3df;
+ color:#392313;
+ font-size:17px;
+ margin:7px 0
+}
+
+button{
+ border:0;
+ border-radius:12px;
+ background:#f0a13e;
+ color:#40200e;
+ font-size:16px;
+ font-weight:bold;
+ padding:13px 10px;
+ cursor:pointer
+}
+
 button:disabled{opacity:.45}
 .primary{width:100%;margin-top:10px}
 .secondary{background:#79502d;color:white}
 .hidden{display:none!important}
 
-.table-tools{display:flex;justify-content:space-around;align-items:center;padding:7px 0 12px;border-bottom:1px solid #ffffff44}
+.table-tools{
+ display:flex;
+ justify-content:space-around;
+ align-items:center;
+ padding:7px 0 12px;
+ border-bottom:1px solid #ffffff44
+}
+
 .tool{font-size:21px}
 .tool small{display:block;font-size:10px;margin-top:3px}
 
 .table-board{
- position:relative;overflow:hidden;min-height:440px;padding:10px 5px 12px;
+ position:relative;
+ overflow:hidden;
+ min-height:440px;
+ padding:10px 5px 12px;
  border-radius:16px;
- background:repeating-linear-gradient(2deg,transparent 0 22px,#75421d22 24px,#f2c08033 27px,transparent 32px),linear-gradient(110deg,#d99b5e,#b97138,#d99b5e);
+ background:
+ repeating-linear-gradient(2deg,transparent 0 22px,#75421d22 24px,#f2c08033 27px,transparent 32px),
+ linear-gradient(110deg,#d99b5e,#b97138,#d99b5e);
  box-shadow:inset 0 0 22px #542b16
 }
-.table-info{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#fff0d5;position:relative;z-index:8}
-#copy{display:block;max-width:230px;padding:8px 12px;font-size:12px;margin:7px auto}
 
-.arena{position:relative;width:100%;height:365px;margin:0 auto}
+.table-info{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ font-size:12px;
+ color:#fff0d5;
+ position:relative;
+ z-index:8
+}
+
+#copy{
+ display:block;
+ max-width:230px;
+ padding:8px 12px;
+ font-size:12px;
+ margin:7px auto
+}
+
+.arena{
+ position:relative;
+ width:100%;
+ height:365px;
+ margin:0 auto
+}
+
 .table-ring{
- position:absolute;width:min(72vw,290px);height:min(72vw,290px);
- max-width:290px;max-height:290px;left:50%;top:48%;
- transform:translate(-50%,-50%);border-radius:50%;
+ position:absolute;
+ width:min(72vw,290px);
+ height:min(72vw,290px);
+ max-width:290px;
+ max-height:290px;
+ left:50%;
+ top:48%;
+ transform:translate(-50%,-50%);
+ border-radius:50%;
  background:radial-gradient(ellipse,#784323,#60351e 70%,#4b2a19);
  border:8px solid #e0a76c;
  box-shadow:inset 0 0 25px #241208,0 4px 12px #3d1e0d
 }
-.bottle-wrap{position:absolute;left:50%;top:48%;width:80px;height:80px;transform:translate(-50%,-50%);z-index:2;display:grid;place-items:center}
-.bottle{font-size:70px;display:block;transform-origin:center center;filter:drop-shadow(0 5px 5px #241208)}
-.bottle.spinning{animation:spin 2.2s cubic-bezier(.12,.72,.2,1) forwards}
-@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(1440deg)}}
 
-#players{position:absolute;inset:0;z-index:4;pointer-events:none}
+.bottle-wrap{
+ position:absolute;
+ left:50%;
+ top:48%;
+ width:80px;
+ height:80px;
+ transform:translate(-50%,-50%);
+ z-index:2;
+ display:grid;
+ place-items:center
+}
+
+.bottle{
+ font-size:70px;
+ display:block;
+ transform-origin:center center;
+ filter:drop-shadow(0 5px 5px #241208)
+}
+
+.bottle.spinning{
+ animation:spin 2.2s cubic-bezier(.12,.72,.2,1) forwards
+}
+
+@keyframes spin{
+ from{transform:rotate(0deg)}
+ to{transform:rotate(1440deg)}
+}
+
+#players{
+ position:absolute;
+ inset:0;
+ z-index:4;
+ pointer-events:none
+}
+
 .player{
- position:absolute;width:72px;min-height:78px;padding:4px 3px;
- border-radius:9px;background:linear-gradient(145deg,#674027,#38251b);
- border:2px solid #d9a46d;box-shadow:0 3px 8px #542c15;
- transform:translate(-50%,-50%);overflow:hidden;
- transition:left .75s cubic-bezier(.22,.8,.25,1),top .75s cubic-bezier(.22,.8,.25,1),border-color .25s,box-shadow .25s;
+ position:absolute;
+ width:72px;
+ min-height:78px;
+ padding:4px 3px;
+ border-radius:9px;
+ background:linear-gradient(145deg,#674027,#38251b);
+ border:2px solid #d9a46d;
+ box-shadow:0 3px 8px #542c15;
+ transform:translate(-50%,-50%);
+ overflow:hidden;
+ transition:
+  left .95s cubic-bezier(.22,.8,.25,1),
+  top .95s cubic-bezier(.22,.8,.25,1),
+  border-color .25s,
+  box-shadow .25s;
  will-change:left,top
 }
-.player.selected{border:2px solid #ffe45d;box-shadow:0 0 13px #ffe45d}
-.player-avatar{width:43px;height:43px;margin:auto;border-radius:7px;display:grid;place-items:center;overflow:hidden;background:linear-gradient(145deg,#f0d1a4,#a86b38);color:#563116;font-size:22px;font-weight:bold;border:2px solid #f5d9ad}
-.player-avatar img{width:100%;height:100%;object-fit:cover}
-.player-name{font-size:10px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.player-meta{font-size:10px;color:#ffe1ae;margin-top:2px}
+
+.player.selected{
+ border:2px solid #ffe45d;
+ box-shadow:0 0 13px #ffe45d
+}
+
+.player-avatar{
+ width:43px;
+ height:43px;
+ margin:auto;
+ border-radius:7px;
+ display:grid;
+ place-items:center;
+ overflow:hidden;
+ background:linear-gradient(145deg,#f0d1a4,#a86b38);
+ color:#563116;
+ font-size:22px;
+ font-weight:bold;
+ border:2px solid #f5d9ad
+}
+
+.player-avatar img{
+ width:100%;
+ height:100%;
+ object-fit:cover
+}
+
+.player-name{
+ font-size:10px;
+ margin-top:3px;
+ white-space:nowrap;
+ overflow:hidden;
+ text-overflow:ellipsis
+}
+
+.player-meta{
+ font-size:10px;
+ color:#ffe1ae;
+ margin-top:2px
+}
 
 .center-actions{
- position:absolute;left:50%;top:70%;transform:translateX(-50%);
- width:min(310px,92%);z-index:7;display:flex;gap:9px
+ position:absolute;
+ left:50%;
+ top:64%;
+ transform:translateX(-50%);
+ width:min(310px,92%);
+ z-index:7;
+ display:flex;
+ gap:9px
 }
-.center-actions button{flex:1;min-width:0;padding:12px 5px;color:white;font-size:14px;box-shadow:0 3px 8px #241208}
+
+.center-actions button{
+ flex:1;
+ min-width:0;
+ padding:12px 5px;
+ color:white;
+ font-size:14px;
+ box-shadow:0 3px 8px #241208
+}
+
 .no{background:#d94335}
 .yes{background:#83bd3e}
-.timer{position:absolute;left:50%;top:88%;transform:translate(-50%,-50%);z-index:7;font-size:22px;color:#ffe18a;font-weight:bold;text-shadow:0 2px 4px #241208}
-.result{font-size:17px;min-height:28px;font-weight:bold;color:#fff3d7;text-shadow:0 2px 3px #75401c;margin:0 0 3px}
-.choice-status{font-size:11px;color:#ffe5c4;position:absolute;top:63%;left:0;right:0;z-index:7;min-height:15px}
-.status{font-size:13px;color:#fff0d9;margin-top:12px}
-.hint{font-size:11px;color:#ffebce;margin-top:3px}
+
+.timer{
+ position:absolute;
+ left:50%;
+ top:88%;
+ transform:translate(-50%,-50%);
+ z-index:7;
+ font-size:22px;
+ color:#ffe18a;
+ font-weight:bold;
+ text-shadow:0 2px 4px #241208
+}
+
+.result{
+ font-size:17px;
+ min-height:28px;
+ font-weight:bold;
+ color:#fff3d7;
+ text-shadow:0 2px 3px #75401c;
+ margin:0 0 3px
+}
+
+.choice-status{
+ font-size:11px;
+ color:#ffe5c4;
+ position:absolute;
+ top:57%;
+ left:0;
+ right:0;
+ z-index:7;
+ min-height:15px
+}
+
+.status{
+ font-size:13px;
+ color:#fff0d9;
+ margin-top:12px
+}
+
+.hint{
+ font-size:11px;
+ color:#ffebce;
+ margin-top:3px
+}
 
 @media(max-width:380px){
  .arena{height:350px}
  .player{width:66px;min-height:74px}
  .player-avatar{width:40px;height:40px}
  .table-board{min-height:425px}
- .center-actions{top:70%}
+ .center-actions{top:64%}
 }
 </style>
 </head>
@@ -120,7 +326,9 @@ button:disabled{opacity:.45}
 
   <div class="arena" id="arena">
    <div class="table-ring"></div>
-   <div class="bottle-wrap"><span class="bottle" id="bottle">🍾</span></div>
+   <div class="bottle-wrap">
+    <span class="bottle" id="bottle">🍾</span>
+   </div>
    <div id="players"></div>
 
    <div class="choice-status" id="choiceStatus"></div>
@@ -211,7 +419,6 @@ function avatarContent(container,player){
  }
 }
 
-/* Расстановка игроков по внешнему краю стола */
 function basePosition(index,total){
  const angle=(-90+(360/Math.max(total,1))*index)*Math.PI/180;
 
@@ -221,8 +428,6 @@ function basePosition(index,total){
  };
 }
 
-/* Отрисовка игроков без пересоздания элементов.
-   Это позволяет плавно перемещать выбранных игроков. */
 function renderPlayers(){
  const players=getPlayers();
 
@@ -274,7 +479,7 @@ function renderPlayers(){
   el.classList.toggle("selected",selected);
 
   const pos=selected
-   ?(p.id===activeRound.pickerId?{x:39,y:39}:{x:61,y:39})
+   ?(p.id===activeRound.pickerId?{x:43,y:39}:{x:57,y:39})
    :basePosition(i,players.length);
 
   if(created){
@@ -344,7 +549,6 @@ function showSpin(data){
 
   bottle.classList.remove("spinning");
 
-  /* Поворачиваем бутылку в сторону выбранного игрока */
   bottle.style.transform="rotate("+(angleToPlayer(data.targetId)+90)+"deg)";
 
   $("result").textContent="💋 Выбраны два игрока!";
@@ -417,7 +621,6 @@ function updateChoiceUI(){
  }
 }
 
-/* Каждый нажатый поцелуй сразу засчитывается другому игроку */
 function scoreKiss(roundId,playerId,choice){
  if(choice!==true)return;
 
@@ -552,7 +755,6 @@ function applyResult(data){
  choices={};
  spinning=false;
 
- /* После окончания раунда игроки возвращаются на места */
  renderPlayers();
 
  $("hint").textContent="Крути бутылочку для следующего раунда";
