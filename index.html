@@ -56,14 +56,9 @@ button:disabled{opacity:.45}
  font-size:12px;margin:7px auto
 }
 .arena{position:relative;width:100%;height:365px;margin:0 auto}
-.table-ring{
- position:absolute;width:min(72vw,290px);height:min(72vw,290px);
- max-width:290px;max-height:290px;left:50%;top:48%;
- transform:translate(-50%,-50%);border-radius:50%;
- background:radial-gradient(ellipse,#784323,#60351e 70%,#4b2a19);
- border:8px solid #e0a76c;
- box-shadow:inset 0 0 25px #241208,0 4px 12px #3d1e0d
-}
+
+/* Круг в центре стола удалён */
+
 .bottle-wrap{
  position:absolute;left:50%;top:48%;width:80px;height:80px;
  transform:translate(-50%,-50%);z-index:2;display:grid;place-items:center
@@ -171,7 +166,6 @@ button:disabled{opacity:.45}
   <button class="secondary" id="copy">Скопировать код комнаты</button>
 
   <div class="arena" id="arena">
-   <div class="table-ring"></div>
    <div class="bottle-wrap">
     <span class="bottle" id="bottle">🍾</span>
    </div>
@@ -265,12 +259,13 @@ function avatarContent(container,player){
  }
 }
 
+/* Аватарки расположены ближе к краям стола */
 function basePosition(index,total){
  const angle=(-90+(360/Math.max(total,1))*index)*Math.PI/180;
 
  return {
-  x:50+38*Math.cos(angle),
-  y:49+37*Math.sin(angle)
+  x:50+41*Math.cos(angle),
+  y:50+39*Math.sin(angle)
  };
 }
 
@@ -317,7 +312,6 @@ function renderPlayers(){
   el.querySelector(".player-name").textContent=p.name+(p.host?" 👑":"");
   el.querySelector(".player-meta").textContent="💋 "+(kissCounts[p.id]||0);
 
-  // ИСПРАВЛЕНО: выбранные игроки выделяются только после остановки бутылки.
   const selected=!spinning&&!!activeRound&&(
    p.id===activeRound.pickerId||
    p.id===activeRound.targetId
@@ -382,7 +376,6 @@ function showSpin(data){
  $("choiceStatus").textContent="";
  $("result").textContent="Бутылочка крутится...";
 
- // Во время вращения все аватарки остаются на своих местах.
  renderPlayers();
 
  const bottle=$("bottle");
@@ -402,7 +395,6 @@ function showSpin(data){
   $("result").textContent="💋 Выбраны два игрока!";
   $("timer").classList.remove("hidden");
 
-  // Только теперь разрешаем движение выбранных аватарок.
   spinning=false;
 
   renderPlayers();
