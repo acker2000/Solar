@@ -11,46 +11,101 @@
 body{margin:0;background:#101820;color:white;font-family:Arial;overflow:hidden}
 #game{position:fixed;inset:0}
 #ui{position:fixed;inset:0;pointer-events:none}
-.top{display:flex;justify-content:space-between;gap:5px;padding:8px}
-.stat{background:#142b35ef;border:1px solid #42606a;border-radius:10px;padding:8px;font-size:11px;min-width:30%;box-shadow:0 3px 12px #0005}
-.stat b{display:block;font-size:15px;color:#7fffc0;margin-top:4px}
-#panel{position:absolute;left:9px;top:75px;background:#142b35df;padding:9px;border-radius:9px;font-size:11px;line-height:1.7}
-#bottom{position:absolute;bottom:0;left:0;right:0;padding:10px;background:linear-gradient(transparent,#07131af5 18%);pointer-events:auto}
-#info{display:flex;justify-content:space-between;font-size:11px;margin-bottom:8px;gap:5px}
+.top{
+ display:grid;
+ grid-template-columns:repeat(4,minmax(0,1fr));
+ gap:5px;padding:6px
+}
+.stat{
+ background:#142b35ed;border:1px solid #42606a;
+ border-radius:8px;padding:6px 4px;
+ font-size:9px;text-align:center;
+ min-width:0;box-shadow:0 3px 10px #0004
+}
+.stat .symbol{font-size:12px;display:block;margin-bottom:2px}
+.stat b{
+ display:block;font-size:12px;color:#7fffc0;
+ margin-top:3px;white-space:nowrap
+}
+#panel{
+ position:absolute;left:7px;top:65px;
+ background:#142b35df;padding:8px;
+ border-radius:9px;font-size:10px;line-height:1.8
+}
+#bottom{
+ position:absolute;bottom:0;left:0;right:0;
+ padding:10px;background:linear-gradient(transparent,#07131af5 18%);
+ pointer-events:auto
+}
+#info{
+ display:flex;justify-content:space-between;
+ font-size:10px;margin-bottom:8px;gap:5px
+}
 #shop{display:flex;gap:7px;overflow-x:auto;padding-bottom:5px}
-button{border:1px solid #52717a;background:#193943;color:white;border-radius:10px;padding:10px 12px;font-size:12px;white-space:nowrap}
+button{
+ border:1px solid #52717a;background:#193943;color:white;
+ border-radius:10px;padding:10px 12px;font-size:12px;
+ white-space:nowrap
+}
 button:active{background:#28765e}
 button b{display:block;color:#7fffc0;margin-top:4px}
-#help{position:absolute;right:10px;top:75px;pointer-events:auto}
-#message{position:absolute;top:125px;left:50%;transform:translateX(-50%);background:#173b34;padding:9px 14px;border-radius:9px;font-size:13px;display:none;white-space:nowrap}
+#help{
+ position:absolute;right:8px;top:65px;
+ pointer-events:auto;padding:7px 11px
+}
+#message{
+ position:absolute;top:115px;left:50%;
+ transform:translateX(-50%);background:#173b34;
+ padding:9px 14px;border-radius:9px;
+ font-size:12px;display:none;white-space:nowrap
+}
 </style>
 </head>
 <body>
+
 <div id="game"></div>
+
 <div id="ui">
  <div class="top">
-  <div class="stat">ДЕНЬ<b id="day">1</b></div>
-  <div class="stat">ДЕНЬГИ<b id="money">₴100 000</b></div>
-  <div class="stat">ТЕКУЩАЯ МОЩНОСТЬ<b id="power">0.00 кВт</b></div>
+  <div class="stat">
+   <span class="symbol">📅</span>ДЕНЬ
+   <b id="day">1</b>
+  </div>
+  <div class="stat">
+   <span class="symbol">💰</span>БАЛАНС
+   <b id="money">₴100 000</b>
+  </div>
+  <div class="stat">
+   <span class="symbol">☀️</span>УСТАНОВЛЕНО
+   <b id="installed">0.00 кВт</b>
+  </div>
+  <div class="stat">
+   <span class="symbol">⚡</span>СЕЙЧАС
+   <b id="power">0.00 кВт</b>
+  </div>
  </div>
+
  <div id="panel">
   🕒 Киев: <span id="clock">00:00</span><br>
-  🌤 <span id="weather">Ясно</span><br>
+  🌤 Погода: <span id="weather">Ясно</span><br>
   🔋 Панели: <span id="dcPower">0.00 кВт</span><br>
   ⚡ После инвертора: <span id="acPower">0.00 кВт</span><br>
   🔌 В сеть: <span id="gridPower">0.00 кВт</span><br>
   ⚡ Выработка: <span id="energy">0 кВт·ч</span><br>
-  💰 Продано: <span id="income">₴0</span><br>
+  💵 Продано: <span id="income">₴0</span><br>
   ☀️ Солнце: <span id="sunstate">Ночь</span>
  </div>
+
  <button id="help" onclick="showHelp()">?</button>
  <div id="message"></div>
+
  <div id="bottom">
   <div id="info">
    <span>Участок: <b>12 × 12</b></span>
    <span>Продажа: <b>₴8/кВт·ч</b></span>
    <span>Автопродажа: <b>ВКЛ</b></span>
   </div>
+
   <div id="shop">
    <button onclick="buyPanel(450)">Панель 450 Вт<b>₴2 000</b></button>
    <button onclick="buyPanel(550)">Панель 550 Вт<b>₴2 400</b></button>
@@ -68,7 +123,7 @@ button b{display:block;color:#7fffc0;margin-top:4px}
 </div>
 
 <script>
-/* СОХРАНЕНИЕ И КИЕВСКОЕ ВРЕМЯ */
+/* СОХРАНЕНИЕ: СОВМЕСТИМО С ПРЕДЫДУЩЕЙ ВЕРСИЕЙ */
 const SAVE_KEY="solar_tycoon_kyiv_v2";
 
 function kyivParts(timestamp){
@@ -78,10 +133,16 @@ function kyivParts(timestamp){
   hour:"2-digit",minute:"2-digit",second:"2-digit",
   hourCycle:"h23"
  }).formatToParts(new Date(timestamp));
+
  const get=k=>p.find(x=>x.type===k).value;
+
  return {
-  year:+get("year"),month:+get("month"),day:+get("day"),
-  hour:+get("hour"),minute:+get("minute"),second:+get("second"),
+  year:+get("year"),
+  month:+get("month"),
+  day:+get("day"),
+  hour:+get("hour"),
+  minute:+get("minute"),
+  second:+get("second"),
   date:get("year")+"-"+get("month")+"-"+get("day")
  };
 }
@@ -89,15 +150,6 @@ function kyivParts(timestamp){
 function weatherForDay(d){
  const types=["Ясно","Переменная облачность","Облачно","Дождь"];
  return types[(d*17+Math.floor(d/3)*7)%types.length];
-}
-
-function weatherFactor(w){
- return {
-  "Ясно":1,
-  "Переменная облачность":.75,
-  "Облачно":.48,
-  "Дождь":.25
- }[w]||1;
 }
 
 function sunlight(hour){
@@ -120,8 +172,12 @@ let state={
 
 try{
  const saved=JSON.parse(localStorage.getItem(SAVE_KEY));
- if(saved)state={...state,...saved};
-}catch(e){}
+ if(saved){
+  state={...state,...saved};
+ }
+}catch(e){
+ console.warn("Не удалось прочитать сохранение",e);
+}
 
 if(!state.lastTime)state.lastTime=Date.now();
 if(!state.lastKyivDate)state.lastKyivDate=kyivParts(Date.now()).date;
@@ -130,10 +186,20 @@ if(!state.weather)state.weather=weatherForDay(state.day);
 function save(){
  try{
   localStorage.setItem(SAVE_KEY,JSON.stringify(state));
- }catch(e){}
+ }catch(e){
+  console.warn("Ошибка сохранения",e);
+ }
 }
 
-/* РЕАЛИСТИЧНАЯ ДИНАМИКА СОЛНЕЧНОЙ МОЩНОСТИ */
+/* МОЩНОСТЬ СОЛНЕЧНОЙ СТАНЦИИ */
+
+function getInstalledPower(){
+ return state.panels.reduce((sum,p)=>sum+p.watt,0)/1000;
+}
+
+function getInverterPower(){
+ return state.inverters.reduce((sum,i)=>sum+i.kw,0);
+}
 
 function getSolarOutput(timestamp=Date.now()){
  const p=kyivParts(timestamp);
@@ -144,6 +210,7 @@ function getSolarOutput(timestamp=Date.now()){
  const dayOfYear=Math.floor((date-yearStart)/86400000)+1;
 
  const season=Math.cos(2*Math.PI*(dayOfYear-172)/365.25);
+
  const sunrise=6.5-2.05*season;
  const sunset=18.5+2.55*season;
 
@@ -151,15 +218,17 @@ function getSolarOutput(timestamp=Date.now()){
 
  if(hour>sunrise&&hour<sunset){
   const phase=(hour-sunrise)/(sunset-sunrise);
-  sunFactor=Math.pow(Math.max(0,Math.sin(Math.PI*phase)),1.25);
+  sunFactor=Math.pow(
+   Math.max(0,Math.sin(Math.PI*phase)),1.25
+  );
  }
 
- // Ночью солнечная генерация всегда равна нулю.
+ // Ночью выработка строго нулевая.
  if(sunFactor<=0||state.panels.length===0){
   return {dc:0,ac:0,grid:0};
  }
 
- // Плавное движение облаков.
+ // Плавно меняющиеся облака.
  const wave1=(Math.sin(timestamp/210000)+1)/2;
  const wave2=(Math.sin(timestamp/530000+1.7)+1)/2;
  const cloudMotion=wave1*.58+wave2*.42;
@@ -168,18 +237,15 @@ function getSolarOutput(timestamp=Date.now()){
 
  if(state.weather==="Ясно"){
   cloud=.94+.06*cloudMotion;
- }
- else if(state.weather==="Переменная облачность"){
+ }else if(state.weather==="Переменная облачность"){
   cloud=.34+.64*cloudMotion;
- }
- else if(state.weather==="Облачно"){
+ }else if(state.weather==="Облачно"){
   cloud=.25+.27*cloudMotion;
- }
- else if(state.weather==="Дождь"){
+ }else if(state.weather==="Дождь"){
   cloud=.07+.24*cloudMotion;
  }
 
- // Температура и потери эффективности.
+ // Температура зависит от сезона и времени дня.
  const seasonalTemp=10+12*season;
  const daytimeHeat=Math.max(
   0,
@@ -187,27 +253,21 @@ function getSolarOutput(timestamp=Date.now()){
  )*9;
 
  const temperature=seasonalTemp+daytimeHeat;
+
  const temperatureFactor=Math.max(
   .86,
   1-Math.max(0,temperature-25)*.004
  );
 
- // Общая мощность установленных панелей.
- const panelKw=state.panels.reduce(
-  (sum,panel)=>sum+panel.watt,0
- )/1000;
-
- // Суммарная мощность инверторов.
- const inverterKw=state.inverters.reduce(
-  (sum,item)=>sum+item.kw,0
- );
+ const panelKw=getInstalledPower();
+ const inverterKw=getInverterPower();
 
  const dc=panelKw*sunFactor*cloud*temperatureFactor;
 
- // Ограничение инвертора и его КПД.
+ // Инвертор ограничивает мощность.
  const ac=Math.min(dc,inverterKw)*.97;
 
- // Ограничение трансформатора.
+ // Без трансформатора выдачи в сеть нет.
  const grid=state.transformer?Math.min(ac,100):0;
 
  return {dc,ac,grid};
@@ -283,10 +343,10 @@ function cylinder(r1,r2,h,mat,x,y,z,parent=scene){
  return m;
 }
 
-/* Земля */
+/* ЗЕМЛЯ И ТЕРРИТОРИЯ */
+
 const ground=new THREE.Mesh(
- new THREE.PlaneGeometry(100,100),
- grassMat
+ new THREE.PlaneGeometry(100,100),grassMat
 );
 ground.rotation.x=-Math.PI/2;
 ground.receiveShadow=true;
@@ -298,14 +358,16 @@ const grid=new THREE.GridHelper(
 grid.position.y=.025;
 scene.add(grid);
 
-/* Дорога */
+/* ДОРОГА */
+
 box(3,.035,28,material(0x777a72),-9,.02,0);
 
 for(let z=-12;z<13;z+=2){
  box(.12,.04,.8,material(0xe2d6a2),-9,.05,z);
 }
 
-/* Ограждение */
+/* ЗАБОР */
+
 function makeFence(){
  const f=material(0x777f7c,.65,.7);
 
@@ -327,7 +389,8 @@ function makeFence(){
 }
 makeFence();
 
-/* Деревья */
+/* ДЕРЕВЬЯ */
+
 function makeTree(x,z,s=1){
  const g=new THREE.Group();
 
@@ -354,7 +417,8 @@ for(let i=0;i<22;i++){
  makeTree(x,12+(i%2)*2,.7+(i%3)*.15);
 }
 
-/* Звёзды */
+/* ЗВЁЗДЫ */
+
 const starPositions=[];
 
 for(let i=0;i<450;i++){
@@ -375,16 +439,14 @@ starGeometry.setAttribute(
 const stars=new THREE.Points(
  starGeometry,
  new THREE.PointsMaterial({
-  color:0xffffff,
-  size:.18,
-  transparent:true,
-  opacity:0
+  color:0xffffff,size:.18,
+  transparent:true,opacity:0
  })
 );
-
 scene.add(stars);
 
-/* Луна */
+/* ЛУНА И СОЛНЦЕ */
+
 const moon=new THREE.Mesh(
  new THREE.SphereGeometry(1.3,24,24),
  new THREE.MeshBasicMaterial({color:0xe4e8f1})
@@ -392,14 +454,14 @@ const moon=new THREE.Mesh(
 moon.position.set(18,24,-25);
 scene.add(moon);
 
-/* Солнце */
 const sunBall=new THREE.Mesh(
  new THREE.SphereGeometry(1.7,24,24),
  new THREE.MeshBasicMaterial({color:0xffdf88})
 );
 scene.add(sunBall);
 
-/* Фонари */
+/* ФОНАРИ */
+
 const lamps=[];
 
 for(const x of [-6,6]){
@@ -414,7 +476,7 @@ for(const x of [-6,6]){
  }
 }
 
-/* ОБОРУДОВАНИЕ */
+/* СОЛНЕЧНЫЕ ПАНЕЛИ */
 
 function makePanel(x,z,watt){
  const g=new THREE.Group();
@@ -444,6 +506,8 @@ function makePanel(x,z,watt){
  return g;
 }
 
+/* ИНВЕРТОР */
+
 function makeInverter(x,z){
  const g=new THREE.Group();
 
@@ -458,15 +522,13 @@ function makeInverter(x,z){
 
  for(let i=0;i<7;i++){
   box(
-   .55,.025,.025,
-   material(0x6b777b),
+   .55,.025,.025,material(0x6b777b),
    0,.42+i*.065,.25,g
   );
  }
 
  box(
-  .12,.18,.06,
-  material(0x333d40),
+  .12,.18,.06,material(0x333d40),
   .28,.18,.25,g
  );
 
@@ -474,6 +536,8 @@ function makeInverter(x,z){
  scene.add(g);
  return g;
 }
+
+/* ТРАНСФОРМАТОР */
 
 function makeTransformer(x,z){
  const g=new THREE.Group();
@@ -509,6 +573,8 @@ function makeTransformer(x,z){
  return g;
 }
 
+/* АККУМУЛЯТОР */
+
 function makeBattery(x,z){
  const g=new THREE.Group();
 
@@ -520,15 +586,13 @@ function makeBattery(x,z){
 
  for(let i=0;i<12;i++){
   box(
-   .035,.85,.03,
-   material(0x606e70),
+   .035,.85,.03,material(0x606e70),
    -.85+i*.155,.8,.59,g
   );
  }
 
  box(
-  .45,.35,.03,
-  material(0x253b42),
+  .45,.35,.03,material(0x253b42),
   .7,1.2,.59,g
  );
 
@@ -536,6 +600,8 @@ function makeBattery(x,z){
  scene.add(g);
  return g;
 }
+
+/* РАЗМЕЩЕНИЕ ОБОРУДОВАНИЯ */
 
 let placed=[];
 
@@ -564,14 +630,13 @@ function rebuild(){
 }
 rebuild();
 
-/* КАМЕРА И УПРАВЛЕНИЕ */
+/* УПРАВЛЕНИЕ КАМЕРОЙ */
 
 let drag=false,lastX=0,lastY=0;
 let targetX=0,targetZ=0;
 let pinch=0;
 
 renderer.domElement.addEventListener("pointerdown",e=>{
- if(e.pointerType==="touch"&&e.isPrimary===false)return;
  drag=true;
  lastX=e.clientX;
  lastY=e.clientY;
@@ -593,9 +658,7 @@ renderer.domElement.addEventListener("pointermove",e=>{
  lastY=e.clientY;
 });
 
-function stopDrag(){
- drag=false;
-}
+function stopDrag(){drag=false;}
 
 renderer.domElement.addEventListener("pointerup",stopDrag);
 renderer.domElement.addEventListener("pointercancel",stopDrag);
@@ -622,12 +685,11 @@ renderer.domElement.addEventListener("touchmove",e=>{
     7,Math.min(35,camera.position.y)
    );
   }
-
   pinch=n;
  }
 },{passive:true});
 
-/* ДЕНЬ И НОЧЬ */
+/* ОСВЕЩЕНИЕ И ВРЕМЯ */
 
 function updateLighting(){
  const p=kyivParts(Date.now());
@@ -701,6 +763,8 @@ function updateLighting(){
  document.getElementById("sunstate").textContent=label;
 }
 
+/* АНИМАЦИЯ */
+
 function animate(){
  requestAnimationFrame(animate);
  updateLighting();
@@ -711,7 +775,6 @@ function animate(){
 
  renderer.render(scene,camera);
 }
-
 animate();
 
 addEventListener("resize",()=>{
@@ -720,23 +783,7 @@ addEventListener("resize",()=>{
  renderer.setSize(innerWidth,innerHeight);
 });
 
-/* ЭКОНОМИКА */
-
-function getProduction(){
- const dc=state.panels.reduce(
-  (s,p)=>s+p.watt,0
- )/1000;
-
- const inverter=state.inverters.reduce(
-  (s,i)=>s+i.kw,0
- );
-
- return {
-  dc,
-  inverter,
-  ac:Math.min(dc,inverter)
- };
-}
+/* ИГРОВАЯ ЭКОНОМИКА */
 
 function processTime(){
  const now=Date.now();
@@ -745,10 +792,7 @@ function processTime(){
  if(now<start)start=now;
 
  const maxTime=30*24*3600000;
-
- if(now-start>maxTime){
-  start=now-maxTime;
- }
+ if(now-start>maxTime)start=now-maxTime;
 
  const step=5*60*1000;
 
@@ -785,6 +829,8 @@ function processTime(){
  save();
 }
 
+/* ОБНОВЛЕНИЕ ИНТЕРФЕЙСА */
+
 function updateUI(){
  const live=getSolarOutput(Date.now());
 
@@ -793,6 +839,11 @@ function updateUI(){
  document.getElementById("money").textContent=
   "₴"+Math.floor(state.money).toLocaleString("ru-RU");
 
+ // Общая установленная мощность панелей.
+ document.getElementById("installed").textContent=
+  getInstalledPower().toFixed(2)+" кВт";
+
+ // Текущая генерация после инвертора.
  document.getElementById("power").textContent=
   live.ac.toFixed(2)+" кВт";
 
@@ -815,7 +866,7 @@ function updateUI(){
   "₴"+Math.floor(state.totalSold*8).toLocaleString("ru-RU");
 }
 
-/* ПОКУПКИ */
+/* СООБЩЕНИЯ */
 
 function notify(t){
  const el=document.getElementById("message");
@@ -828,6 +879,8 @@ function notify(t){
   el.style.display="none";
  },2200);
 }
+
+/* ПОКУПКА ПАНЕЛЕЙ */
 
 function buyPanel(watt){
  const prices={
@@ -861,6 +914,8 @@ function buyPanel(watt){
  notify("Установлена панель "+watt+" Вт");
 }
 
+/* ПОКУПКА ИНВЕРТОРОВ */
+
 function buyInverter(kw){
  const prices={
   5:8000,
@@ -886,6 +941,8 @@ function buyInverter(kw){
  notify("Инвертор "+kw+" кВт установлен");
 }
 
+/* ТРАНСФОРМАТОР */
+
 function buyTransformer(){
  if(state.transformer){
   return notify("Трансформатор уже установлен");
@@ -904,6 +961,8 @@ function buyTransformer(){
 
  notify("Трансформатор подключён");
 }
+
+/* АККУМУЛЯТОР */
 
 function buyBattery(){
  if(state.battery){
@@ -924,6 +983,8 @@ function buyBattery(){
  notify("Аккумулятор установлен");
 }
 
+/* СПРАВКА */
+
 function showHelp(){
  alert(
   "SOLAR TYCOON 3D\n\n"+
@@ -933,14 +994,14 @@ function showHelp(){
   "2. Устанавливай инверторы.\n"+
   "3. Устанавливай трансформатор.\n"+
   "4. Электричество продаётся по ₴8 за кВт·ч.\n"+
-  "5. Ночью панели не вырабатывают электричество.\n"+
+  "5. Ночью генерация равна нулю.\n"+
   "6. Прогресс сохраняется автоматически.\n\n"+
   "Камера: один палец.\n"+
   "Масштаб: два пальца."
  );
 }
 
-/* ЗАПУСК */
+/* ЗАПУСК И АВТОСОХРАНЕНИЕ */
 
 processTime();
 updateUI();
@@ -956,6 +1017,9 @@ document.addEventListener("visibilitychange",()=>{
   updateUI();
  }
 });
+
+window.addEventListener("pagehide",save);
+window.addEventListener("beforeunload",save);
 
 save();
 </script>
