@@ -55,6 +55,19 @@ button b{display:block;color:#7fffc0;margin-top:4px}
   💵 Продано: <span id="income">₴0</span><br>
   ☀️ Солнце: <span id="sunstate">Ночь</span>
  </div>
+ <div style="position:absolute;right:8px;top:105px;
+background:#142b35ed;padding:8px;border-radius:9px;
+border:1px solid #42606a;pointer-events:auto">
+  🌍 Мой город:
+  <select id="citySelect" onchange="changeCity(this.value)"
+  style="background:#193943;color:white;padding:5px;border-radius:6px">
+    <option value="kyiv">Киев</option>
+    <option value="berlin">Берлин</option>
+    <option value="warsaw">Варшава</option>
+    <option value="newyork">Нью-Йорк</option>
+    <option value="tokyo">Токио</option>
+  </select>
+</div>
  <button id="help" onclick="showHelp()">?</button>
  <div id="message"></div>
  <div id="bottom">
