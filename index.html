@@ -59,18 +59,12 @@ button b{display:block;color:#7fffc0;margin-top:4px}
 background:#142b35ed;padding:8px;border-radius:9px;
 border:1px solid #42606a;pointer-events:auto">
   🌍 Мой город:
-  <select id="citySelect" onchange="changeCity(this.value)"
-  style="background:#193943;color:white;padding:5px;border-radius:6px">
-    <option value="kyiv">Киев</option>
-    <option value="berlin">Берлин</option>
-    <option value="warsaw">Варшава</option>
-    <option value="newyork">Нью-Йорк</option>
-    <option value="tokyo">Токио</option>
-  </select>
-</div>
- <button id="help" onclick="showHelp()">?</button>
- <div id="message"></div>
- <div id="bottom">
+  <input id="citySearch" type="search"
+  placeholder="Введи название города"
+  style="width:140px;padding:6px">
+  <button onclick="searchCities()">Найти</button>
+  <div id="cityResults"></div>
+  <div id="currentCity">Киев, Украина</div>
   <div id="info">
    <span>Участок: <b>12 × 12</b></span>
    <span>Продажа: <b>₴8/кВт·ч</b></span>
