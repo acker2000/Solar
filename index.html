@@ -109,6 +109,7 @@ function kyivParts(timestamp){
 function weatherForDay(d){
  const types=["Ясно","Переменная облачность","Облачно","Дождь"];
  return types[(d*17+Math.floor(d/3)*7)%types.length];
+}
 // РЕАЛЬНАЯ ПОГОДА КИЕВА
 let realWeather = {
  cloud: null,
@@ -129,8 +130,7 @@ async function refreshKyivWeather(){
   realWeather.cloud=current.cloud_cover;
   realWeather.temperature=current.temperature_2m;
   realWeather.radiation=current.shortwave_radiation;
-refreshKyivWeather();
-setInterval(refreshKyivWeather,15*60*1000);
+
   const code=current.weather_code;
 
   if(code===0)state.weather="Ясно";
@@ -169,7 +169,8 @@ if(!Array.isArray(state.inverters))state.inverters=[];
 if(!state.lastTime)state.lastTime=Date.now();
 if(!state.lastKyivDate)state.lastKyivDate=kyivParts(Date.now()).date;
 if(!state.weather)state.weather=weatherForDay(state.day);
-
+refreshKyivWeather();
+setInterval(refreshKyivWeather,15*60*1000);
 function save(){
  try{localStorage.setItem(SAVE_KEY,JSON.stringify(state))}
  catch(e){console.warn("Ошибка сохранения",e)}
