@@ -8,81 +8,80 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#101820;color:white;font-family:Arial;overflow:hidden}
+html,body{margin:0;width:100%;height:100%;overflow:hidden}
+body{background:#101820;color:white;font-family:Arial;touch-action:none}
 #game{position:fixed;inset:0}
 #ui{position:fixed;inset:0;pointer-events:none}
 .top{
- display:grid;
- grid-template-columns:repeat(4,minmax(0,1fr));
- gap:5px;padding:6px
+ display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+ gap:5px;padding:7px 6px;
 }
 .stat{
  background:#142b35ed;border:1px solid #42606a;
- border-radius:8px;padding:6px 4px;
- font-size:8px;text-align:center;
- min-width:0;box-shadow:0 3px 10px #0004
+ border-radius:9px;padding:5px 3px;
+ font-size:8px;text-align:center;min-width:0;
+ box-shadow:0 3px 10px #0004;
 }
-.stat .symbol{font-size:10px;display:block;margin-bottom:2px}
+.stat .symbol{font-size:12px;display:block;margin-bottom:2px}
 .stat b{
- display:block;font-size:12px;color:#7fffc0;
- margin-top:3px;white-space:nowrap
+ display:block;font-size:clamp(10px,2.8vw,12px);
+ color:#7fffc0;margin-top:3px;white-space:nowrap;
+ overflow:hidden;text-overflow:ellipsis;
 }
 #panel{
- position:absolute;left:7px;top:65px;
- background:#142b35df;padding:8px;
- border-radius:9px;font-size:10px;line-height:1.8
+ position:absolute;left:7px;top:66px;
+ background:#142b35e8;border:1px solid #42606a;
+ padding:8px 9px;border-radius:9px;
+ font-size:10px;line-height:1.9;
+ box-shadow:0 3px 10px #0004;
 }
 #bottom{
  position:absolute;bottom:0;left:0;right:0;
- padding:10px;background:linear-gradient(transparent,#07131af5 18%);
- pointer-events:auto
+ padding:10px 8px max(10px,env(safe-area-inset-bottom));
+ background:linear-gradient(transparent,#07131af5 18%);
+ pointer-events:auto;
 }
 #info{
  display:flex;justify-content:space-between;
- font-size:10px;margin-bottom:8px;gap:5px
+ font-size:9px;margin-bottom:8px;gap:5px;
 }
 #shop{display:flex;gap:7px;overflow-x:auto;padding-bottom:5px}
+#shop::-webkit-scrollbar{height:4px}
+#shop::-webkit-scrollbar-thumb{background:#52717a;border-radius:5px}
 button{
  border:1px solid #52717a;background:#193943;color:white;
  border-radius:10px;padding:10px 12px;font-size:12px;
- white-space:nowrap
+ white-space:nowrap;touch-action:manipulation;
 }
 button:active{background:#28765e}
 button b{display:block;color:#7fffc0;margin-top:4px}
 #help{
- position:absolute;right:8px;top:65px;
- pointer-events:auto;padding:7px 11px
+ position:absolute;right:8px;top:66px;
+ pointer-events:auto;padding:7px 12px;
 }
 #message{
- position:absolute;top:115px;left:50%;
+ position:absolute;top:120px;left:50%;
  transform:translateX(-50%);background:#173b34;
- padding:9px 14px;border-radius:9px;
- font-size:12px;display:none;white-space:nowrap
+ border:1px solid #43816b;padding:9px 14px;
+ border-radius:9px;font-size:12px;
+ display:none;white-space:nowrap;max-width:90%;
+}
+@media(max-width:380px){
+ .stat{font-size:7px;padding:5px 2px}
+ .stat b{font-size:10px}
+ #panel{font-size:9px;line-height:1.8}
+ #info{font-size:8px}
 }
 </style>
 </head>
 <body>
-
 <div id="game"></div>
-
 <div id="ui">
  <div class="top">
-  <div class="stat">
-   <span class="symbol">📅</span>ДАТА (КИЕВ)
-   <b id="gameDate">20 ноя 2026</b>
-  </div>
-  <div class="stat">
-   <span class="symbol">💰</span>БАЛАНС
-   <b id="money">₴100 000</b>
-  </div>
-  <div class="stat">
-   <span class="symbol">☀️</span>ОБЩАЯ МОЩНОСТЬ
-   <b id="installed">0.00 кВт</b>
-  </div>
-  <div class="stat">
-   <span class="symbol">⚡</span>СЕЙЧАС
-   <b id="power">0.00 кВт</b>
-  </div>
+  <div class="stat"><span class="symbol">📅</span>ДАТА (КИЕВ)<b id="gameDate">20 ноя 2026</b></div>
+  <div class="stat"><span class="symbol">💰</span>БАЛАНС<b id="money">₴100 000</b></div>
+  <div class="stat"><span class="symbol">☀️</span>ОБЩАЯ МОЩНОСТЬ<b id="installed">0.00 кВт</b></div>
+  <div class="stat"><span class="symbol">⚡</span>СЕЙЧАС<b id="power">0.00 кВт</b></div>
  </div>
 
  <div id="panel">
@@ -106,7 +105,6 @@ button b{display:block;color:#7fffc0;margin-top:4px}
    <span>Продажа: <b>₴8/кВт·ч</b></span>
    <span>Автопродажа: <b>ВКЛ</b></span>
   </div>
-
   <div id="shop">
    <button onclick="buyPanel(450)">Панель 450 Вт<b>₴2 000</b></button>
    <button onclick="buyPanel(550)">Панель 550 Вт<b>₴2 400</b></button>
@@ -124,26 +122,19 @@ button b{display:block;color:#7fffc0;margin-top:4px}
 </div>
 
 <script>
-/* СОХРАНЕНИЕ: СОВМЕСТИМО С ПРЕДЫДУЩЕЙ ВЕРСИЕЙ */
+/* СОХРАНЕНИЕ — СТАРЫЙ КЛЮЧ ОСТАЁТСЯ */
 const SAVE_KEY="solar_tycoon_kyiv_v2";
 
 function kyivParts(timestamp){
  const p=new Intl.DateTimeFormat("en-GB",{
-  timeZone:"Europe/Kyiv",
-  year:"numeric",month:"2-digit",day:"2-digit",
-  hour:"2-digit",minute:"2-digit",second:"2-digit",
-  hourCycle:"h23"
+  timeZone:"Europe/Kyiv",year:"numeric",month:"2-digit",
+  day:"2-digit",hour:"2-digit",minute:"2-digit",
+  second:"2-digit",hourCycle:"h23"
  }).formatToParts(new Date(timestamp));
-
  const get=k=>p.find(x=>x.type===k).value;
-
  return {
-  year:+get("year"),
-  month:+get("month"),
-  day:+get("day"),
-  hour:+get("hour"),
-  minute:+get("minute"),
-  second:+get("second"),
+  year:+get("year"),month:+get("month"),day:+get("day"),
+  hour:+get("hour"),minute:+get("minute"),second:+get("second"),
   date:get("year")+"-"+get("month")+"-"+get("day")
  };
 }
@@ -153,150 +144,94 @@ function weatherForDay(d){
  return types[(d*17+Math.floor(d/3)*7)%types.length];
 }
 
-function sunlight(hour){
- return Math.max(0,Math.sin(Math.PI*(hour-6)/12));
-}
+function sunlight(hour){return Math.max(0,Math.sin(Math.PI*(hour-6)/12));}
 
 let state={
- money:100000,
- day:1,
- panels:[],
- inverters:[],
- transformer:false,
- battery:false,
- energy:0,
- totalSold:0,
- lastTime:Date.now(),
- lastKyivDate:kyivParts(Date.now()).date,
+ money:100000,day:1,panels:[],inverters:[],
+ transformer:false,battery:false,energy:0,totalSold:0,
+ lastTime:Date.now(),lastKyivDate:kyivParts(Date.now()).date,
  weather:"Ясно"
 };
 
 try{
  const saved=JSON.parse(localStorage.getItem(SAVE_KEY));
- if(saved){
-  state={...state,...saved};
- }
-}catch(e){
- console.warn("Не удалось прочитать сохранение",e);
-}
+ if(saved)state={...state,...saved};
+}catch(e){console.warn("Ошибка чтения сохранения",e)}
 
+if(!Array.isArray(state.panels))state.panels=[];
+if(!Array.isArray(state.inverters))state.inverters=[];
 if(!state.lastTime)state.lastTime=Date.now();
 if(!state.lastKyivDate)state.lastKyivDate=kyivParts(Date.now()).date;
 if(!state.weather)state.weather=weatherForDay(state.day);
 
 function save(){
- try{
-  localStorage.setItem(SAVE_KEY,JSON.stringify(state));
- }catch(e){
-  console.warn("Ошибка сохранения",e);
- }
+ try{localStorage.setItem(SAVE_KEY,JSON.stringify(state))}
+ catch(e){console.warn("Ошибка сохранения",e)}
 }
 
-/* МОЩНОСТЬ СОЛНЕЧНОЙ СТАНЦИИ */
+/* ЭЛЕКТРОСТАНЦИЯ */
 
 function getInstalledPower(){
- return state.panels.reduce((sum,p)=>sum+p.watt,0)/1000;
+ return state.panels.reduce((sum,p)=>sum+(Number(p.watt)||0),0)/1000;
 }
-
 function getInverterPower(){
- return state.inverters.reduce((sum,i)=>sum+i.kw,0);
+ return state.inverters.reduce((sum,i)=>sum+(Number(i.kw)||0),0);
 }
 
 function getSolarOutput(timestamp=Date.now()){
  const p=kyivParts(timestamp);
  const hour=p.hour+p.minute/60+p.second/3600;
-
  const date=new Date(Date.UTC(p.year,p.month-1,p.day));
  const yearStart=new Date(Date.UTC(p.year,0,1));
  const dayOfYear=Math.floor((date-yearStart)/86400000)+1;
-
  const season=Math.cos(2*Math.PI*(dayOfYear-172)/365.25);
-
  const sunrise=6.5-2.05*season;
  const sunset=18.5+2.55*season;
-
  let sunFactor=0;
 
  if(hour>sunrise&&hour<sunset){
   const phase=(hour-sunrise)/(sunset-sunrise);
-  sunFactor=Math.pow(
-   Math.max(0,Math.sin(Math.PI*phase)),1.25
-  );
+  sunFactor=Math.pow(Math.max(0,Math.sin(Math.PI*phase)),1.25);
  }
+ if(sunFactor<=0||state.panels.length===0)return {dc:0,ac:0,grid:0};
 
- // Ночью выработка строго нулевая.
- if(sunFactor<=0||state.panels.length===0){
-  return {dc:0,ac:0,grid:0};
- }
-
- // Плавно меняющиеся облака.
  const wave1=(Math.sin(timestamp/210000)+1)/2;
  const wave2=(Math.sin(timestamp/530000+1.7)+1)/2;
  const cloudMotion=wave1*.58+wave2*.42;
-
  let cloud=1;
 
- if(state.weather==="Ясно"){
-  cloud=.94+.06*cloudMotion;
- }else if(state.weather==="Переменная облачность"){
-  cloud=.34+.64*cloudMotion;
- }else if(state.weather==="Облачно"){
-  cloud=.25+.27*cloudMotion;
- }else if(state.weather==="Дождь"){
-  cloud=.07+.24*cloudMotion;
- }
+ if(state.weather==="Ясно")cloud=.94+.06*cloudMotion;
+ else if(state.weather==="Переменная облачность")cloud=.34+.64*cloudMotion;
+ else if(state.weather==="Облачно")cloud=.25+.27*cloudMotion;
+ else if(state.weather==="Дождь")cloud=.07+.24*cloudMotion;
 
- // Температура зависит от сезона и времени дня.
  const seasonalTemp=10+12*season;
- const daytimeHeat=Math.max(
-  0,
-  Math.sin(Math.PI*(hour-sunrise)/(sunset-sunrise))
- )*9;
-
+ const daytimeHeat=Math.max(0,Math.sin(Math.PI*(hour-sunrise)/(sunset-sunrise)))*9;
  const temperature=seasonalTemp+daytimeHeat;
-
- const temperatureFactor=Math.max(
-  .86,
-  1-Math.max(0,temperature-25)*.004
- );
-
- const panelKw=getInstalledPower();
- const inverterKw=getInverterPower();
-
- const dc=panelKw*sunFactor*cloud*temperatureFactor;
-
- // Инвертор ограничивает мощность.
- const ac=Math.min(dc,inverterKw)*.97;
-
- // Без трансформатора выдачи в сеть нет.
+ const temperatureFactor=Math.max(.86,1-Math.max(0,temperature-25)*.004);
+ const dc=getInstalledPower()*sunFactor*cloud*temperatureFactor;
+ const ac=Math.min(dc,getInverterPower())*.97;
  const grid=state.transformer?Math.min(ac,100):0;
-
  return {dc,ac,grid};
 }
 
-/* 3D СЦЕНА */
+/* THREE.JS */
 
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x9bc8e5);
 scene.fog=new THREE.Fog(0x9bc8e5,45,110);
 
-const camera=new THREE.PerspectiveCamera(
- 48,innerWidth/innerHeight,.1,300
-);
-camera.position.set(13,15,20);
-camera.lookAt(0,0,0);
-
+const camera=new THREE.PerspectiveCamera(48,innerWidth/innerHeight,.1,300);
 const renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(innerWidth,innerHeight);
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));
 renderer.shadowMap.enabled=true;
 renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 renderer.outputEncoding=THREE.sRGBEncoding;
+renderer.domElement.style.touchAction="none";
 document.getElementById("game").appendChild(renderer.domElement);
 
-const ambient=new THREE.HemisphereLight(
- 0xd8edff,0x52613c,1.3
-);
+const ambient=new THREE.HemisphereLight(0xd8edff,0x52613c,1.3);
 scene.add(ambient);
 
 const sun=new THREE.DirectionalLight(0xffe6b5,2);
@@ -314,78 +249,48 @@ moonLight.position.set(10,15,-10);
 scene.add(moonLight);
 
 function material(color,rough=.8,metal=0){
- return new THREE.MeshStandardMaterial({
-  color,roughness:rough,metalness:metal
- });
+ return new THREE.MeshStandardMaterial({color,roughness:rough,metalness:metal});
 }
-
 const grassMat=material(0x527b3c);
 const metalMat=material(0x87949a,.35,.8);
 const glassMat=material(0x102d49,.25,.65);
 
 function box(w,h,d,mat,x,y,z,parent=scene){
- const m=new THREE.Mesh(
-  new THREE.BoxGeometry(w,h,d),mat
- );
+ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
  m.position.set(x,y,z);
- m.castShadow=true;
- m.receiveShadow=true;
- parent.add(m);
- return m;
+ m.castShadow=true;m.receiveShadow=true;
+ parent.add(m);return m;
 }
-
 function cylinder(r1,r2,h,mat,x,y,z,parent=scene){
- const m=new THREE.Mesh(
-  new THREE.CylinderGeometry(r1,r2,h,12),mat
- );
- m.position.set(x,y,z);
- m.castShadow=true;
- parent.add(m);
- return m;
+ const m=new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,h,12),mat);
+ m.position.set(x,y,z);m.castShadow=true;
+ parent.add(m);return m;
 }
 
-/* ЗЕМЛЯ И ТЕРРИТОРИЯ */
+/* ЗЕМЛЯ */
 
-const ground=new THREE.Mesh(
- new THREE.PlaneGeometry(100,100),grassMat
-);
-ground.rotation.x=-Math.PI/2;
-ground.receiveShadow=true;
-scene.add(ground);
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(100,100),grassMat);
+ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
 
-const grid=new THREE.GridHelper(
- 24,24,0x8b9d72,0x71895d
-);
-grid.position.y=.025;
-scene.add(grid);
+const grid=new THREE.GridHelper(24,24,0x8b9d72,0x71895d);
+grid.position.y=.025;scene.add(grid);
 
 /* ДОРОГА */
 
 box(3,.035,28,material(0x777a72),-9,.02,0);
-
-for(let z=-12;z<13;z+=2){
- box(.12,.04,.8,material(0xe2d6a2),-9,.05,z);
-}
+for(let z=-12;z<13;z+=2)box(.12,.04,.8,material(0xe2d6a2),-9,.05,z);
 
 /* ЗАБОР */
 
 function makeFence(){
  const f=material(0x777f7c,.65,.7);
-
  for(let i=-7;i<=7;i++){
-  for(const z of [-7,7]){
-   cylinder(.045,.045,1.2,f,i,.6,z);
-  }
-  for(const x of [-7,7]){
-   cylinder(.045,.045,1.2,f,x,.6,i);
-  }
+  for(const z of [-7,7])cylinder(.045,.045,1.2,f,i,.6,z);
+  for(const x of [-7,7])cylinder(.045,.045,1.2,f,x,.6,i);
  }
-
  for(const y of [.35,.85]){
-  box(14,.035,.035,f,0,y,-7);
-  box(14,.035,.035,f,0,y,7);
-  box(.035,.035,14,f,-7,y,0);
-  box(.035,.035,14,f,7,y,0);
+  box(14,.035,.035,f,0,y,-7);box(14,.035,.035,f,0,y,7);
+  box(.035,.035,14,f,-7,y,0);box(.035,.035,14,f,7,y,0);
  }
 }
 makeFence();
@@ -394,24 +299,11 @@ makeFence();
 
 function makeTree(x,z,s=1){
  const g=new THREE.Group();
-
- cylinder(
-  .13,.2,1.1,material(0x60472b),0,.55,0,g
- );
-
- const leaves=new THREE.Mesh(
-  new THREE.ConeGeometry(.75,1.8,7),
-  material(0x285d35)
- );
-
- leaves.position.y=1.8;
- leaves.castShadow=true;
- g.add(leaves);
- g.position.set(x,0,z);
- g.scale.setScalar(s);
- scene.add(g);
+ cylinder(.13,.2,1.1,material(0x60472b),0,.55,0,g);
+ const leaves=new THREE.Mesh(new THREE.ConeGeometry(.75,1.8,7),material(0x285d35));
+ leaves.position.y=1.8;leaves.castShadow=true;g.add(leaves);
+ g.position.set(x,0,z);g.scale.setScalar(s);scene.add(g);
 }
-
 for(let i=0;i<22;i++){
  const x=(i%11)*3-15;
  makeTree(x,-12-(i%3)*2,.7+(i%4)*.12);
@@ -421,63 +313,39 @@ for(let i=0;i<22;i++){
 /* ЗВЁЗДЫ */
 
 const starPositions=[];
-
 for(let i=0;i<450;i++){
- starPositions.push(
-  (Math.random()-.5)*150,
-  15+Math.random()*55,
-  (Math.random()-.5)*150
- );
+ starPositions.push((Math.random()-.5)*150,15+Math.random()*55,(Math.random()-.5)*150);
 }
-
 const starGeometry=new THREE.BufferGeometry();
-
-starGeometry.setAttribute(
- "position",
- new THREE.Float32BufferAttribute(starPositions,3)
-);
-
-const stars=new THREE.Points(
- starGeometry,
- new THREE.PointsMaterial({
-  color:0xffffff,size:.18,
-  transparent:true,opacity:0
- })
-);
+starGeometry.setAttribute("position",new THREE.Float32BufferAttribute(starPositions,3));
+const stars=new THREE.Points(starGeometry,new THREE.PointsMaterial({
+ color:0xffffff,size:.18,transparent:true,opacity:0
+}));
 scene.add(stars);
 
-/* ЛУНА И СОЛНЦЕ */
+/* СОЛНЦЕ И ЛУНА */
 
-const moon=new THREE.Mesh(
- new THREE.SphereGeometry(1.3,24,24),
- new THREE.MeshBasicMaterial({color:0xe4e8f1})
-);
-moon.position.set(18,24,-25);
-scene.add(moon);
+const moon=new THREE.Mesh(new THREE.SphereGeometry(1.3,24,24),
+ new THREE.MeshBasicMaterial({color:0xe4e8f1}));
+moon.position.set(18,24,-25);scene.add(moon);
 
-const sunBall=new THREE.Mesh(
- new THREE.SphereGeometry(1.7,24,24),
- new THREE.MeshBasicMaterial({color:0xffdf88})
-);
+const sunBall=new THREE.Mesh(new THREE.SphereGeometry(1.7,24,24),
+ new THREE.MeshBasicMaterial({color:0xffdf88}));
 scene.add(sunBall);
 
 /* ФОНАРИ */
 
 const lamps=[];
-
 for(const x of [-6,6]){
  for(const z of [-6,0,6]){
   cylinder(.055,.08,2.7,metalMat,x,1.35,z);
   box(.65,.12,.35,material(0x293b40),x,2.65,z);
-
   const light=new THREE.PointLight(0xffd58a,0,9);
-  light.position.set(x,2.5,z);
-  scene.add(light);
-  lamps.push(light);
+  light.position.set(x,2.5,z);scene.add(light);lamps.push(light);
  }
 }
 
-/* СОЛНЕЧНЫЕ ПАНЕЛИ */
+/* ОБОРУДОВАНИЕ */
 
 function makePanel(x,z,watt){
  const g=new THREE.Group();
@@ -489,216 +357,208 @@ function makePanel(x,z,watt){
 
  for(let r=0;r<6;r++){
   for(let c=0;c<10;c++){
-   box(
-    .174,.012,.145,cells,
-    -.82+c*.182,.936,-.405+r*.162,g
-   );
+   box(.174,.012,.145,cells,-.82+c*.182,.936,-.405+r*.162,g);
   }
  }
-
  box(2.05,.07,.09,metalMat,0,.65,-.42,g);
  box(2.05,.07,.09,metalMat,0,.65,.42,g);
  cylinder(.045,.045,.85,metalMat,-.65,.4,0,g);
  cylinder(.045,.045,.85,metalMat,.65,.4,0,g);
 
  g.position.set(x,0,z);
- g.rotation.x=-.18;
+
+ // Наклон панели: её лицевая сторона направлена в сторону обзора.
+ g.rotation.set(.28,0,-.22);
  scene.add(g);
  return g;
 }
-
-/* ИНВЕРТОР */
 
 function makeInverter(x,z){
  const g=new THREE.Group();
-
- box(
-  .85,1.15,.48,
-  material(0xc5cdd0,.6,.45),
-  0,.58,0,g
- );
-
+ box(.85,1.15,.48,material(0xc5cdd0,.6,.45),0,.58,0,g);
  box(.62,.24,.025,material(0x172d34),0,.86,.25,g);
  box(.27,.12,.02,material(0x40db8a,.2),0,.86,.27,g);
-
- for(let i=0;i<7;i++){
-  box(
-   .55,.025,.025,material(0x6b777b),
-   0,.42+i*.065,.25,g
-  );
- }
-
- box(
-  .12,.18,.06,material(0x333d40),
-  .28,.18,.25,g
- );
-
- g.position.set(x,0,z);
- scene.add(g);
- return g;
+ for(let i=0;i<7;i++)box(.55,.025,.025,material(0x6b777b),0,.42+i*.065,.25,g);
+ box(.12,.18,.06,material(0x333d40),.28,.18,.25,g);
+ g.position.set(x,0,z);scene.add(g);return g;
 }
-
-/* ТРАНСФОРМАТОР */
 
 function makeTransformer(x,z){
  const g=new THREE.Group();
-
- box(
-  1.8,1.2,1.25,
-  material(0x7c898c,.55,.6),
-  0,.75,0,g
- );
-
+ box(1.8,1.2,1.25,material(0x7c898c,.55,.6),0,.75,0,g);
  for(let s of [-1,1]){
-  for(let i=0;i<8;i++){
-   box(
-    .07,.95,.08,metalMat,
-    s*.97,.75,-.48+i*.135,g
-   );
-  }
+  for(let i=0;i<8;i++)box(.07,.95,.08,metalMat,s*.97,.75,-.48+i*.135,g);
  }
-
  for(let i=0;i<3;i++){
-  cylinder(
-   .12,.12,.65,material(0xddd5b4,.3),
-   -.5+i*.5,1.65,0,g
-  );
-  cylinder(
-   .04,.04,.5,material(0x333d40,.3),
-   -.5+i*.5,2.15,0,g
-  );
+  cylinder(.12,.12,.65,material(0xddd5b4,.3),-.5+i*.5,1.65,0,g);
+  cylinder(.04,.04,.5,material(0x333d40,.3),-.5+i*.5,2.15,0,g);
  }
-
- g.position.set(x,0,z);
- scene.add(g);
- return g;
+ g.position.set(x,0,z);scene.add(g);return g;
 }
-
-/* АККУМУЛЯТОР */
 
 function makeBattery(x,z){
  const g=new THREE.Group();
-
- box(
-  2.3,1.5,1.15,
-  material(0xbac4c5,.65,.4),
-  0,.8,0,g
- );
-
- for(let i=0;i<12;i++){
-  box(
-   .035,.85,.03,material(0x606e70),
-   -.85+i*.155,.8,.59,g
-  );
- }
-
- box(
-  .45,.35,.03,material(0x253b42),
-  .7,1.2,.59,g
- );
-
- g.position.set(x,0,z);
- scene.add(g);
- return g;
+ box(2.3,1.5,1.15,material(0xbac4c5,.65,.4),0,.8,0,g);
+ for(let i=0;i<12;i++)box(.035,.85,.03,material(0x606e70),-.85+i*.155,.8,.59,g);
+ box(.45,.35,.03,material(0x253b42),.7,1.2,.59,g);
+ g.position.set(x,0,z);scene.add(g);return g;
 }
 
-/* РАЗМЕЩЕНИЕ ОБОРУДОВАНИЯ */
+/* КАБЕЛИ */
+
+const cableBlack= new THREE.MeshStandardMaterial({color:0x20272a,roughness:.7});
+const cableRed= new THREE.MeshStandardMaterial({color:0x9d2925,roughness:.65});
+const cableBlue= new THREE.MeshStandardMaterial({color:0x254d75,roughness:.65});
+
+function makeCable(points,mat,parent){
+ const curve=new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(p[0],p[1],p[2])));
+ const geometry=new THREE.TubeGeometry(curve,Math.max(12,points.length*6),.025,6,false);
+ const mesh=new THREE.Mesh(geometry,mat);
+ mesh.castShadow=true;parent.add(mesh);return mesh;
+}
 
 let placed=[];
-
 function rebuild(){
  placed.forEach(o=>scene.remove(o));
  placed=[];
 
+ const panelObjects=[];
  state.panels.forEach(p=>{
-  placed.push(makePanel(p.x,p.z,p.watt));
+  const obj=makePanel(p.x,p.z,p.watt);
+  placed.push(obj);panelObjects.push(obj);
  });
 
+ const inverterObjects=[];
  state.inverters.forEach((v,i)=>{
-  placed.push(makeInverter(
-   5.5+(i%2)*1.2,
-   -5+Math.floor(i/2)*1.3
-  ));
+  const x=5.5+(i%2)*1.2;
+  const z=-5+Math.floor(i/2)*1.3;
+  const obj=makeInverter(x,z);
+  placed.push(obj);inverterObjects.push({obj,x,z});
  });
 
+ let transformerPosition=null;
  if(state.transformer){
-  placed.push(makeTransformer(5.7,2));
+  const obj=makeTransformer(5.7,2);
+  placed.push(obj);transformerPosition={x:5.7,z:2};
+ }
+ if(state.battery)placed.push(makeBattery(5.5,5));
+
+ // Кабели от панелей к ближайшему инвертору.
+ if(inverterObjects.length&&panelObjects.length){
+  const cableGroup=new THREE.Group();
+  panelObjects.forEach((panel,index)=>{
+   const p=state.panels[index];
+   let nearest=inverterObjects[0];
+   let best=Infinity;
+   inverterObjects.forEach(inv=>{
+    const d=Math.hypot(p.x-inv.x,p.z-inv.z);
+    if(d<best){best=d;nearest=inv;}
+   });
+   const endX=nearest.x-.48;
+   const endZ=nearest.z;
+   const startX=p.x+.7;
+   const startZ=p.z+.38;
+   makeCable([
+    [startX,.42,startZ],
+    [startX,.18,startZ],
+    [(startX+endX)/2,.13,(startZ+endZ)/2],
+    [endX,.18,endZ],
+    [endX,.35,endZ]
+   ],index%2===0?cableRed:cableBlack,cableGroup);
+  });
+  placed.push(cableGroup);scene.add(cableGroup);
  }
 
- if(state.battery){
-  placed.push(makeBattery(5.5,5));
+ // Кабели от инверторов к трансформатору.
+ if(transformerPosition&&inverterObjects.length){
+  const group=new THREE.Group();
+  inverterObjects.forEach((inv,i)=>{
+   makeCable([
+    [inv.x+.45,.3,inv.z],
+    [inv.x+.8,.12,inv.z],
+    [5.9,.12,inv.z],
+    [6.3,.18,1.5],
+    [6.3,.4,transformerPosition.z]
+   ],i%2===0?cableBlue:cableBlack,group);
+  });
+  placed.push(group);scene.add(group);
  }
 }
 rebuild();
 
-/* УПРАВЛЕНИЕ КАМЕРОЙ */
+/* КАМЕРА: ВРАЩЕНИЕ ОДНИМ ПАЛЬЦЕМ, ЗУМ ДВУМЯ */
 
-let drag=false,lastX=0,lastY=0;
-let targetX=0,targetZ=0;
-let pinch=0;
+const cameraTarget=new THREE.Vector3(0,0,0);
+let cameraRadius=28;
+let cameraTheta=Math.atan2(13,20);
+let cameraPhi=Math.acos(15/Math.sqrt(13*13+15*15+20*20));
+cameraPhi=Math.max(.25,Math.min(1.35,cameraPhi));
 
-renderer.domElement.addEventListener("pointerdown",e=>{
- drag=true;
- lastX=e.clientX;
- lastY=e.clientY;
+const pointers=new Map();
+let previousPointer=null;
+let previousPinch=0;
+
+function updateCameraPosition(){
+ const sinPhi=Math.sin(cameraPhi);
+ camera.position.set(
+  cameraTarget.x+cameraRadius*sinPhi*Math.sin(cameraTheta),
+  cameraTarget.y+cameraRadius*Math.cos(cameraPhi),
+  cameraTarget.z+cameraRadius*sinPhi*Math.cos(cameraTheta)
+ );
+ camera.lookAt(cameraTarget);
+}
+function pinchDistance(){
+ const pts=[...pointers.values()];
+ if(pts.length<2)return 0;
+ return Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);
+}
+
+const canvas=renderer.domElement;
+canvas.addEventListener("pointerdown",e=>{
+ pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ previousPointer={x:e.clientX,y:e.clientY};
+ if(pointers.size===2)previousPinch=pinchDistance();
+ canvas.setPointerCapture(e.pointerId);
 });
 
-renderer.domElement.addEventListener("pointermove",e=>{
- if(!drag)return;
+canvas.addEventListener("pointermove",e=>{
+ if(!pointers.has(e.pointerId))return;
+ const old=pointers.get(e.pointerId);
+ pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
 
- const dx=e.clientX-lastX;
- const dy=e.clientY-lastY;
-
- targetX-=dx*.025;
- targetZ+=dy*.025;
-
- targetX=Math.max(-12,Math.min(12,targetX));
- targetZ=Math.max(-12,Math.min(12,targetZ));
-
- lastX=e.clientX;
- lastY=e.clientY;
-});
-
-function stopDrag(){drag=false;}
-
-renderer.domElement.addEventListener("pointerup",stopDrag);
-renderer.domElement.addEventListener("pointercancel",stopDrag);
-
-renderer.domElement.addEventListener("touchstart",e=>{
- if(e.touches.length===2){
-  pinch=Math.hypot(
-   e.touches[0].clientX-e.touches[1].clientX,
-   e.touches[0].clientY-e.touches[1].clientY
-  );
- }
-},{passive:true});
-
-renderer.domElement.addEventListener("touchmove",e=>{
- if(e.touches.length===2){
-  const n=Math.hypot(
-   e.touches[0].clientX-e.touches[1].clientX,
-   e.touches[0].clientY-e.touches[1].clientY
-  );
-
-  if(pinch>0){
-   camera.position.multiplyScalar(pinch/n);
-   camera.position.y=Math.max(
-    7,Math.min(35,camera.position.y)
-   );
+ if(pointers.size===1){
+  const dx=e.clientX-old.x;
+  const dy=e.clientY-old.y;
+  cameraTheta-=dx*.006;
+  cameraPhi-=dy*.005;
+  cameraPhi=Math.max(.28,Math.min(1.42,cameraPhi));
+ }else if(pointers.size>=2){
+  const distance=pinchDistance();
+  if(previousPinch>0&&distance>0){
+   cameraRadius*=previousPinch/distance;
+   cameraRadius=Math.max(12,Math.min(48,cameraRadius));
   }
-  pinch=n;
+  previousPinch=distance;
  }
-},{passive:true});
+});
+
+function removePointer(e){
+ pointers.delete(e.pointerId);
+ previousPinch=pointers.size===2?pinchDistance():0;
+}
+canvas.addEventListener("pointerup",removePointer);
+canvas.addEventListener("pointercancel",removePointer);
+canvas.addEventListener("lostpointercapture",removePointer);
+
+updateCameraPosition();
 
 /* ОСВЕЩЕНИЕ И ВРЕМЯ */
 
 function updateLighting(){
  const p=kyivParts(Date.now());
  const time=p.hour+p.minute/60+p.second/3600;
-
  const daylight=sunlight(time);
  const night=1-daylight;
-
  const dawn=Math.max(0,Math.min(1,(time-5)/2));
  const dusk=Math.max(0,Math.min(1,(20-time)/2));
  const lightLevel=Math.min(dawn,dusk);
@@ -706,61 +566,34 @@ function updateLighting(){
  const daySky=new THREE.Color(0x9bc8e5);
  const nightSky=new THREE.Color(0x071426);
  const sunsetSky=new THREE.Color(0xe68c58);
-
  let sky=nightSky.clone().lerp(daySky,daylight);
 
- if(time>=5&&time<8){
-  sky.lerp(sunsetSky,(1-lightLevel)*.25);
- }
-
- if(time>=17&&time<20){
-  sky.lerp(sunsetSky,(1-lightLevel)*.45);
- }
+ if(time>=5&&time<8)sky.lerp(sunsetSky,(1-lightLevel)*.25);
+ if(time>=17&&time<20)sky.lerp(sunsetSky,(1-lightLevel)*.45);
 
  scene.background.copy(sky);
  scene.fog.color.copy(sky);
-
  sun.intensity=.04+daylight*1.9;
  ambient.intensity=.18+daylight*1.12;
  moonLight.intensity=.04+night*.28;
 
  const angle=(time-6)/12*Math.PI;
-
- sunBall.position.set(
-  -Math.cos(angle)*35,
-  3+daylight*25,
-  5
- );
-
+ sunBall.position.set(-Math.cos(angle)*35,3+daylight*25,5);
  sunBall.visible=daylight>.02;
+ sunBall.material.color.setHex(time<8||time>16?0xffa75c:0xffdf88);
 
- sunBall.material.color.setHex(
-  time<8||time>16?0xffa75c:0xffdf88
- );
-
- moon.position.set(
-  Math.cos(angle)*25,
-  16+night*12,
-  -20
- );
-
+ moon.position.set(Math.cos(angle)*25,16+night*12,-20);
  moon.visible=night>.15;
  stars.material.opacity=night;
-
- lamps.forEach(l=>{
-  l.intensity=night>.45?1.8:0;
- });
+ lamps.forEach(l=>{l.intensity=night>.45?1.8:0});
 
  let label="Ночь";
-
  if(time>=5&&time<7)label="Рассвет";
  else if(time>=7&&time<18)label="День";
  else if(time>=18&&time<20)label="Закат";
 
  document.getElementById("clock").textContent=
-  String(p.hour).padStart(2,"0")+":"+
-  String(p.minute).padStart(2,"0");
-
+  String(p.hour).padStart(2,"0")+":"+String(p.minute).padStart(2,"0");
  document.getElementById("sunstate").textContent=label;
 }
 
@@ -769,11 +602,6 @@ function updateLighting(){
 function animate(){
  requestAnimationFrame(animate);
  updateLighting();
-
- camera.position.x+=(targetX+13-camera.position.x)*.06;
- camera.position.z+=(targetZ+20-camera.position.z)*.06;
- camera.lookAt(targetX,0,targetZ);
-
  renderer.render(scene,camera);
 }
 animate();
@@ -784,19 +612,17 @@ addEventListener("resize",()=>{
  renderer.setSize(innerWidth,innerHeight);
 });
 
-/* ИГРОВАЯ ЭКОНОМИКА */
+/* ЭКОНОМИКА И ИГРОВОЕ ВРЕМЯ */
 
 function processTime(){
  const now=Date.now();
  let start=state.lastTime||now;
-
  if(now<start)start=now;
 
  const maxTime=30*24*3600000;
  if(now-start>maxTime)start=now-maxTime;
 
  const step=5*60*1000;
-
  while(start<now){
   const end=Math.min(start+step,now);
   const middle=(start+end)/2;
@@ -810,27 +636,21 @@ function processTime(){
 
   const hours=(end-start)/3600000;
   const output=getSolarOutput(middle);
-
   const generated=output.ac*hours;
   const sold=output.grid*hours;
 
-  if(generated>0){
-   state.energy+=generated;
-  }
-
+  if(generated>0)state.energy+=generated;
   if(sold>0){
    state.money+=sold*8;
    state.totalSold+=sold;
   }
-
   start=end;
  }
-
  state.lastTime=now;
  save();
 }
 
-/* ОБНОВЛЕНИЕ ИНТЕРФЕЙСА */
+/* ИНТЕРФЕЙС */
 
 function updateUI(){
  const now=Date.now();
@@ -841,33 +661,16 @@ function updateUI(){
  document.getElementById("gameDate").textContent=
   kyiv.day+" "+monthNames[kyiv.month-1]+" "+kyiv.year;
  document.getElementById("day").textContent=state.day;
-
  document.getElementById("money").textContent=
   "₴"+Math.floor(state.money).toLocaleString("ru-RU");
-
- // Общая установленная мощность панелей.
  document.getElementById("installed").textContent=
   getInstalledPower().toFixed(2)+" кВт";
-
- // Текущая генерация после инвертора.
- document.getElementById("power").textContent=
-  live.ac.toFixed(2)+" кВт";
-
- document.getElementById("dcPower").textContent=
-  live.dc.toFixed(2)+" кВт";
-
- document.getElementById("acPower").textContent=
-  live.ac.toFixed(2)+" кВт";
-
- document.getElementById("gridPower").textContent=
-  live.grid.toFixed(2)+" кВт";
-
- document.getElementById("weather").textContent=
-  state.weather;
-
- document.getElementById("energy").textContent=
-  state.energy.toFixed(1);
-
+ document.getElementById("power").textContent=live.ac.toFixed(2)+" кВт";
+ document.getElementById("dcPower").textContent=live.dc.toFixed(2)+" кВт";
+ document.getElementById("acPower").textContent=live.ac.toFixed(2)+" кВт";
+ document.getElementById("gridPower").textContent=live.grid.toFixed(2)+" кВт";
+ document.getElementById("weather").textContent=state.weather;
+ document.getElementById("energy").textContent=state.energy.toFixed(1)+" кВт·ч";
  document.getElementById("income").textContent=
   "₴"+Math.floor(state.totalSold*8).toLocaleString("ru-RU");
 }
@@ -876,116 +679,61 @@ function updateUI(){
 
 function notify(t){
  const el=document.getElementById("message");
- el.textContent=t;
- el.style.display="block";
-
+ el.textContent=t;el.style.display="block";
  clearTimeout(window.msgTimer);
-
- window.msgTimer=setTimeout(()=>{
-  el.style.display="none";
- },2200);
+ window.msgTimer=setTimeout(()=>{el.style.display="none"},2200);
 }
 
 /* ПОКУПКА ПАНЕЛЕЙ */
 
 function buyPanel(watt){
- const prices={
-  450:2000,
-  550:2400,
-  600:2700,
-  700:3100
- };
-
+ const prices={450:2000,550:2400,600:2700,700:3100};
  const price=prices[watt];
-
- if(state.money<price){
-  return notify("Недостаточно денег");
- }
+ if(!price)return;
+ if(state.money<price)return notify("Недостаточно денег");
 
  const count=state.panels.length;
  const x=-5+(count%5)*2.2;
  const z=-5+Math.floor(count/5)*1.8;
-
- if(z>5){
-  return notify("Место на участке закончилось");
- }
+ if(z>5)return notify("Место на участке закончилось");
 
  state.money-=price;
  state.panels.push({watt,x,z});
-
- rebuild();
- updateUI();
- save();
-
+ rebuild();updateUI();save();
  notify("Установлена панель "+watt+" Вт");
 }
 
-/* ПОКУПКА ИНВЕРТОРОВ */
+/* ИНВЕРТОРЫ */
 
 function buyInverter(kw){
- const prices={
-  5:8000,
-  10:14000,
-  30:29000,
-  50:42000,
-  100:70000
- };
-
+ const prices={5:8000,10:14000,30:29000,50:42000,100:70000};
  const price=prices[kw];
-
- if(state.money<price){
-  return notify("Недостаточно денег");
- }
+ if(!price)return;
+ if(state.money<price)return notify("Недостаточно денег");
 
  state.money-=price;
  state.inverters.push({kw});
-
- rebuild();
- updateUI();
- save();
-
+ rebuild();updateUI();save();
  notify("Инвертор "+kw+" кВт установлен");
 }
 
 /* ТРАНСФОРМАТОР */
 
 function buyTransformer(){
- if(state.transformer){
-  return notify("Трансформатор уже установлен");
- }
-
- if(state.money<25000){
-  return notify("Недостаточно денег");
- }
-
- state.money-=25000;
- state.transformer=true;
-
- rebuild();
- updateUI();
- save();
-
+ if(state.transformer)return notify("Трансформатор уже установлен");
+ if(state.money<25000)return notify("Недостаточно денег");
+ state.money-=25000;state.transformer=true;
+ rebuild();updateUI();save();
  notify("Трансформатор подключён");
 }
 
 /* АККУМУЛЯТОР */
 
 function buyBattery(){
- if(state.battery){
-  return notify("Аккумулятор уже установлен");
- }
-
- if(state.money<18000){
-  return notify("Недостаточно денег");
- }
-
- state.money-=18000;
- state.battery=true;
-
- rebuild();
- updateUI();
- save();
-
+ if(state.battery)return notify("Аккумулятор уже установлен");
+ if(state.money<18000)return notify("Недостаточно денег");
+ state.money-=18000;state.battery=true;
+ rebuild();updateUI();save();
  notify("Аккумулятор установлен");
 }
 
@@ -1002,12 +750,12 @@ function showHelp(){
   "4. Электричество продаётся по ₴8 за кВт·ч.\n"+
   "5. Ночью генерация равна нулю.\n"+
   "6. Прогресс сохраняется автоматически.\n\n"+
-  "Камера: один палец.\n"+
-  "Масштаб: два пальца."
+  "Камера: один палец — вращение.\n"+
+  "Два пальца — приближение и отдаление."
  );
 }
 
-/* ЗАПУСК И АВТОСОХРАНЕНИЕ */
+/* ЗАПУСК */
 
 processTime();
 updateUI();
@@ -1018,15 +766,10 @@ setInterval(()=>{
 },1000);
 
 document.addEventListener("visibilitychange",()=>{
- if(!document.hidden){
-  processTime();
-  updateUI();
- }
+ if(!document.hidden){processTime();updateUI()}
 });
-
 window.addEventListener("pagehide",save);
 window.addEventListener("beforeunload",save);
-
 save();
 </script>
 </body>
