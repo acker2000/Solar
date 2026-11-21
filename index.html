@@ -110,7 +110,8 @@ function weatherForDay(d){
  const types=["Ясно","Переменная облачность","Облачно","Дождь"];
  return types[(d*17+Math.floor(d/3)*7)%types.length];
 }
-// РЕАЛЬНАЯ ПОГОДА КИЕВА
+
+/* РЕАЛЬНАЯ ПОГОДА КИЕВА */
 let realWeather = {
  cloud: null,
  temperature: null,
@@ -150,7 +151,26 @@ async function refreshKyivWeather(){
   console.warn("Не удалось получить погоду Киева",error);
  }
 }
-function sunlight(hour){return Math.max(0,Math.sin(Math.PI*(hour-6)/12));}
+
+/* РАССВЕТ И ЗАКАТ ДЛЯ КИЕВА */
+function getKyivSunTimes(parts){
+ const date=new Date(Date.UTC(parts.year,parts.month-1,parts.day));
+ const yearStart=new Date(Date.UTC(parts.year,0,1));
+ const dayOfYear=Math.floor((date-yearStart)/86400000)+1;
+ const g=2*Math.PI/365*(dayOfYear-1);
+ const eq=229.18*(0.000075+0.001868*Math.cos(g)-0.032077*Math.sin(g)-0.014615*Math.cos(2*g)-0.040849*Math.sin(2*g));
+ const dec=0.006918-0.399912*Math.cos(g)+0.070257*Math.sin(g)-0.006758*Math.cos(2*g)+0.000907*Math.sin(2*g)-0.002697*Math.cos(3*g)+0.00148*Math.sin(3*g);
+ const latitude=50.4501*Math.PI/180,longitude=30.5234,zenith=90.833*Math.PI/180;
+ const cosHourAngle=(Math.cos(zenith)-Math.sin(latitude)*Math.sin(dec))/(Math.cos(latitude)*Math.cos(dec));
+ if(cosHourAngle>=1)return {sunrise:0,sunset:0};
+ if(cosHourAngle<=-1)return {sunrise:0,sunset:1440};
+ const hourAngle=Math.acos(cosHourAngle)*180/Math.PI;
+ const solarNoonUtc=720-4*longitude-eq;
+ const utcMidnight=Date.UTC(parts.year,parts.month-1,parts.day);
+ const sunriseParts=kyivParts(utcMidnight+(solarNoonUtc-hourAngle*4)*60000);
+ const sunsetParts=kyivParts(utcMidnight+(solarNoonUtc+hourAngle*4)*60000);
+ return {sunrise:sunriseParts.hour*60+sunriseParts.minute,sunset:sunsetParts.hour*60+sunsetParts.minute};
+}
 
 let state={
  money:100000,day:1,panels:[],inverters:[],
@@ -169,8 +189,10 @@ if(!Array.isArray(state.inverters))state.inverters=[];
 if(!state.lastTime)state.lastTime=Date.now();
 if(!state.lastKyivDate)state.lastKyivDate=kyivParts(Date.now()).date;
 if(!state.weather)state.weather=weatherForDay(state.day);
+
 refreshKyivWeather();
 setInterval(refreshKyivWeather,5*60*1000);
+
 function save(){
  try{localStorage.setItem(SAVE_KEY,JSON.stringify(state))}
  catch(e){console.warn("Ошибка сохранения",e)}
@@ -186,17 +208,17 @@ function getInverterPower(){
 
 function getSolarOutput(timestamp=Date.now()){
  const p=kyivParts(timestamp);
- const hour=p.hour+p.minute/60+p.second/3600;
+ const minuteOfDay=p.hour*60+p.minute+p.second/60;
+ const sunTimes=getKyivSunTimes(p);
+ const sunrise=sunTimes.sunrise;
+ const sunset=sunTimes.sunset;
 
  const date=new Date(Date.UTC(p.year,p.month-1,p.day));
  const yearStart=new Date(Date.UTC(p.year,0,1));
  const dayOfYear=Math.floor((date-yearStart)/86400000)+1;
  const season=Math.cos(2*Math.PI*(dayOfYear-172)/365.25);
 
- const sunrise=6.5-2.05*season;
- const sunset=18.5+2.55*season;
-
- if(state.panels.length===0||hour<=sunrise||hour>=sunset){
+ if(state.panels.length===0||sunrise===sunset||minuteOfDay<=sunrise||minuteOfDay>=sunset){
   return {dc:0,ac:0,grid:0};
  }
 
@@ -205,7 +227,7 @@ function getSolarOutput(timestamp=Date.now()){
  if(realWeather.radiation!==null){
   sunFactor=Math.max(0,Math.min(1.2,realWeather.radiation/1000));
  }else{
-  const phase=(hour-sunrise)/(sunset-sunrise);
+  const phase=(minuteOfDay-sunrise)/(sunset-sunrise);
   sunFactor=Math.pow(Math.max(0,Math.sin(Math.PI*phase)),1.25);
 
   const wave1=(Math.sin(timestamp/210000)+1)/2;
@@ -233,7 +255,7 @@ function getSolarOutput(timestamp=Date.now()){
 
  return {dc,ac,grid};
 }
- 
+
 /* THREE.JS */
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x9bc8e5);
@@ -587,44 +609,37 @@ updateCameraPosition();
 /* ОСВЕЩЕНИЕ И ВРЕМЯ */
 function updateLighting(){
  const p=kyivParts(Date.now());
- const time=p.hour+p.minute/60+p.second/3600;
- const daylight=sunlight(time);
+ const minuteOfDay=p.hour*60+p.minute+p.second/60;
+ const sunTimes=getKyivSunTimes(p);
+ const sunrise=sunTimes.sunrise,sunset=sunTimes.sunset;
+ const dayLength=Math.max(1,sunset-sunrise);
+ const progress=(minuteOfDay-sunrise)/dayLength;
+ const isDay=minuteOfDay>sunrise&&minuteOfDay<sunset;
+ const daylight=isDay?Math.max(0,Math.sin(Math.PI*progress)):0;
  const night=1-daylight;
- const dawn=Math.max(0,Math.min(1,(time-5)/2));
- const dusk=Math.max(0,Math.min(1,(20-time)/2));
- const lightLevel=Math.min(dawn,dusk);
-
- const daySky=new THREE.Color(0x9bc8e5);
- const nightSky=new THREE.Color(0x071426);
- const sunsetSky=new THREE.Color(0xe68c58);
- let sky=nightSky.clone().lerp(daySky,daylight);
-
- if(time>=5&&time<8)sky.lerp(sunsetSky,(1-lightLevel)*.25);
- if(time>=17&&time<20)sky.lerp(sunsetSky,(1-lightLevel)*.45);
-
- scene.background.copy(sky);
- scene.fog.color.copy(sky);
- sun.intensity=.04+daylight*1.9;
- ambient.intensity=.18+daylight*1.12;
- moonLight.intensity=.04+night*.28;
-
- const angle=(time-6)/12*Math.PI;
- sunBall.position.set(-Math.cos(angle)*35,3+daylight*25,5);
- sunBall.visible=daylight>.02;
- sunBall.material.color.setHex(time<8||time>16?0xffa75c:0xffdf88);
-
- moon.position.set(Math.cos(angle)*25,16+night*12,-20);
- moon.visible=night>.15;
- stars.material.opacity=night;
+ const dawnGlow=Math.max(0,1-Math.abs(minuteOfDay-sunrise)/90);
+ const duskGlow=Math.max(0,1-Math.abs(minuteOfDay-sunset)/90);
+ const twilight=Math.max(dawnGlow,duskGlow);
+ const daySky=new THREE.Color(0x9bc8e5),nightSky=new THREE.Color(0x071426),sunsetSky=new THREE.Color(0xe68c58);
+ let sky=nightSky.clone().lerp(daySky,Math.min(1,daylight*1.25));
+ sky.lerp(sunsetSky,twilight*.55);
+ scene.background.copy(sky);scene.fog.color.copy(sky);
+ sun.intensity=.04+daylight*1.9;ambient.intensity=.18+daylight*1.12;moonLight.intensity=.04+night*.28;
+ const sunHeight=isDay?Math.max(.5,Math.sin(Math.PI*progress)*25):-.5;
+ const sunAngle=(progress-.5)*Math.PI;
+ sunBall.position.set(-Math.sin(sunAngle)*35,sunHeight+3,5);
+ sunBall.visible=isDay;
+ sunBall.material.color.setHex(twilight>.25?0xffa75c:0xffdf88);
+ sun.position.set(sunBall.position.x+10,Math.max(4,sunHeight+18),sunBall.position.z+8);
+ moon.position.set(Math.sin(sunAngle+Math.PI)*25,16+night*12,-20);
+ moon.visible=!isDay||daylight<.08;
+ stars.material.opacity=night>.7?night:0;
  lamps.forEach(l=>{l.intensity=night>.45?1.8:0});
-
  let label="Ночь";
- if(time>=5&&time<7)label="Рассвет";
- else if(time>=7&&time<18)label="День";
- else if(time>=18&&time<20)label="Закат";
-
- document.getElementById("clock").textContent=
-  String(p.hour).padStart(2,"0")+":"+String(p.minute).padStart(2,"0");
+ if(isDay&&minuteOfDay<sunrise+45)label="Рассвет";
+ else if(isDay&&minuteOfDay>sunset-45)label="Закат";
+ else if(isDay)label="День";
+ document.getElementById("clock").textContent=String(p.hour).padStart(2,"0")+":"+String(p.minute).padStart(2,"0");
  document.getElementById("sunstate").textContent=label;
 }
 
