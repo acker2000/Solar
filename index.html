@@ -129,7 +129,8 @@ async function refreshKyivWeather(){
   realWeather.cloud=current.cloud_cover;
   realWeather.temperature=current.temperature_2m;
   realWeather.radiation=current.shortwave_radiation;
-
+refreshKyivWeather();
+setInterval(refreshKyivWeather,15*60*1000);
   const code=current.weather_code;
 
   if(code===0)state.weather="Ясно";
