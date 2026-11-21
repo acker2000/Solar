@@ -121,9 +121,9 @@ margin-bottom:6px;pointer-events:auto;font-size:10px">
   </div>
   <div id="shop">
    <button onclick="buyPanel(450)">Панель 450 Вт<b>₴2 000</b></button>
-   <button onclick="buyPanel(550)">Панель 550 Вт<b>₴2 400</b></button>
+   <button onclick="buyPanel(585)">Панель 585 Вт<b>₴2 400</b></button>
    <button onclick="buyPanel(600)">Панель 600 Вт<b>₴2 700</b></button>
-   <button onclick="buyPanel(700)">Панель 700 Вт<b>₴3 100</b></button>
+   <button onclick="buyPanel(645)">Панель 645 Вт<b>₴3 100</b></button>
    <button onclick="buyInverter(5)">Инвертор 5 кВт<b>₴8 000</b></button>
    <button onclick="buyInverter(10)">Инвертор 10 кВт<b>₴14 000</b></button>
    <button onclick="buyInverter(30)">Инвертор 30 кВт<b>₴29 000</b></button>
@@ -816,7 +816,7 @@ function notify(t){
 
 /* ПОКУПКА ПАНЕЛЕЙ */
 function buyPanel(watt){
- const prices={450:2000,550:2400,600:2700,700:3100};
+ const prices={450:2000,585:2400,600:2700,645:3100};
  const price=prices[watt];
  if(!price)return;
  if(state.money<price)return notify("Недостаточно денег");
