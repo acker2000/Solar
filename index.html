@@ -208,8 +208,8 @@ async function refreshKyivWeather(){
 
   const code=current.weather_code;
 
-  if(code===0)state.weather="Ясно";
-  else if(code<=2)state.weather="Переменная облачность";
+  if(code<=1)state.weather="Ясно";
+else if(code===2)state.weather="Переменная облачность";
   else if(code===3)state.weather="Облачно";
   else if(code<=48)state.weather="Туман";
   else if(code<=67)state.weather="Дождь";
