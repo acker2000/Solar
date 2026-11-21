@@ -263,7 +263,18 @@ if(!Array.isArray(state.inverters))state.inverters=[];
 if(!state.lastTime)state.lastTime=Date.now();
 if(!state.lastKyivDate)state.lastKyivDate=kyivParts(Date.now()).date;
 if(!state.weather)state.weather=weatherForDay(state.day);
+/* ОДНОРАЗОВЫЙ ВОЗВРАТ ЗА ТРАНСФОРМАТОР */
+if(state.transformer===true && state.transformerRefunded!==true){
+ state.money+=25000;
+ state.transformer=false;
+ state.transformerRefunded=true;
 
+ try{
+  localStorage.setItem(SAVE_KEY,JSON.stringify(state));
+ }catch(e){
+  console.warn("Ошибка возврата денег",e);
+ }
+}
 refreshKyivWeather();
 setInterval(refreshKyivWeather,5*60*1000);
 
