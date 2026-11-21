@@ -42,6 +42,44 @@ button b{display:block;color:#7fffc0;margin-top:4px}
  #panel{font-size:9px;line-height:1.8}
  #info{font-size:8px}
 }
+ /* ОКНО ПОДТВЕРЖДЕНИЯ ПОКУПКИ */
+#buyConfirm{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:10000;
+  background:#000b;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+#buyConfirm .buy-box{
+  width:100%;
+  max-width:320px;
+  background:#142b35;
+  border:1px solid #52717a;
+  border-radius:16px;
+  padding:20px;
+  text-align:center;
+  box-shadow:0 10px 40px #0009;
+}
+#buyConfirm h3{
+  color:#7fffc0;
+  margin:0 0 15px;
+}
+#buyConfirm p{
+  font-size:14px;
+  line-height:1.6;
+}
+#buyConfirm .buy-buttons{
+  display:flex;
+  gap:10px;
+  margin-top:18px;
+}
+#buyConfirm .buy-buttons button{
+  flex:1;
+}
+
 </style>
 </head>
 <body>
