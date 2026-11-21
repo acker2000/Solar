@@ -636,9 +636,13 @@ function updateLighting(){
  stars.material.opacity=night>.7?night:0;
  lamps.forEach(l=>{l.intensity=night>.45?1.8:0});
  let label="Ночь";
- if(isDay&&minuteOfDay<sunrise+45)label="Рассвет";
- else if(isDay&&minuteOfDay>sunset-45)label="Закат";
- else if(isDay)label="День";
+
+if(minuteOfDay>=sunrise&&minuteOfDay<sunrise+120)
+  label="Утро";
+else if(minuteOfDay>=sunrise+120&&minuteOfDay<sunset-90)
+  label="День";
+else if(minuteOfDay>=sunset-90&&minuteOfDay<sunset+90)
+  label="Вечер";
  document.getElementById("clock").textContent=String(p.hour).padStart(2,"0")+":"+String(p.minute).padStart(2,"0");
  document.getElementById("sunstate").textContent=label;
 }
