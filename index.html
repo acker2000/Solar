@@ -135,6 +135,24 @@ margin-bottom:6px;pointer-events:auto;font-size:10px">
  </div>
 </div>
 
+ </div>
+
+ <!-- ОКНО ПОДТВЕРЖДЕНИЯ ПОКУПКИ -->
+ <div id="buyConfirm">
+  <div class="buy-box">
+   <h3>Подтверждение покупки</h3>
+   <p id="buyConfirmText"></p>
+   <div class="buy-buttons">
+    <button onclick="cancelPurchase()">Отмена</button>
+    <button onclick="confirmPurchase()">Подтвердить</button>
+   </div>
+  </div>
+ </div>
+
+</div>
+
+<script>
+
 <script>
 /* СОХРАНЕНИЕ */
 const SAVE_KEY="solar_tycoon_kyiv_v2";
