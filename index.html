@@ -335,7 +335,7 @@ function getSolarOutput(timestamp=Date.now()){
 
  const dc=getInstalledPower()*sunFactor*temperatureFactor;
  const ac=Math.min(dc,getInverterPower())*.97;
- const grid=state.transformer?Math.min(ac,100):0;
+ const grid=Math.min(ac,100);
 
  return {dc,ac,grid};
 }
