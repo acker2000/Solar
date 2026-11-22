@@ -521,13 +521,10 @@ for(const x of [-6,6]){
 /* ОБОРУДОВАНИЕ */
 
 function makePanel(x,z,watt){
- 
-
  const frame=material(0x9ba6aa,.28,.85);
  const cellMat=material(0x102c50,.19,.55);
  const backMat=material(0x303a3e,.65,.65);
  const busMat=material(0xaab7bd,.3,.8);
-
  const surface=new THREE.Group();
  surface.position.y=.85;
 
@@ -599,16 +596,8 @@ function makePanel(x,z,watt){
 
  const g=new THREE.Group();
  
- 
-
  // Плоскость панели наклонена на 15 градусов.
  // Опорные стойки остаются вертикальными.
- 
- 
-
- 
- 
-
  
   for(let c=0;c<10;c++){
    box(.174,.012,.145,cells,-.82+c*.182,.086,-.405+r*.162,surface);
@@ -619,18 +608,8 @@ function makePanel(x,z,watt){
  box(2.05,.07,.09,metalMat,0,-.20,-.42,surface);
  box(2.05,.07,.09,metalMat,0,-.20,.42,surface);
 
- 
- 
-
  // Вертикальные опоры.
  
- 
-
- 
- 
- 
-
-
 function makeInverter(x,z){
  const g=new THREE.Group();
  box(.85,1.15,.48,material(0xc5cdd0,.6,.45),0,.58,0,g);
