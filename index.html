@@ -914,7 +914,30 @@ function buyBattery(){
  rebuild();updateUI();save();
  notify("Аккумулятор установлен");
 }
+/* УПРАВЛЕНИЕ МАГАЗИНОМ И СТАТИСТИКОЙ */
 
+function toggleShop(){
+ const shop=document.getElementById("shop");
+ const btn=document.getElementById("shopToggleBtn");
+
+ if(shop.style.display==="flex"){
+  shop.style.display="none";
+  btn.textContent="🛒 МАГАЗИН";
+ }else{
+  shop.style.display="flex";
+  btn.textContent="✖ ЗАКРЫТЬ";
+ }
+}
+
+function toggleStats(){
+ const panel=document.getElementById("panel");
+
+ if(panel.style.display==="none"){
+  panel.style.display="block";
+ }else{
+  panel.style.display="none";
+ }
+}
 /* СПРАВКА */
 function showHelp(){
  alert(
