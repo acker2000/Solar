@@ -35,6 +35,53 @@ button{border:1px solid #52717a;background:#193943;color:white;border-radius:10p
 button:active{background:#28765e}
 button b{display:block;color:#7fffc0;margin-top:4px}
 #help{position:absolute;right:8px;top:66px;pointer-events:auto;padding:7px 12px}
+ /* НОВЫЕ КНОПКИ УПРАВЛЕНИЯ */
+#shopToggleBtn{
+ position:absolute;
+ bottom:150px;
+ left:10px;
+ z-index:100;
+ padding:9px 13px;
+ border-radius:12px;
+ background:#17634f;
+ font-size:12px;
+}
+
+#statsToggleBtn{
+ position:absolute;
+ right:10px;
+ top:66px;
+ z-index:100;
+ width:42px;
+ height:42px;
+ padding:0;
+ border-radius:50%;
+ font-size:20px;
+}
+
+/* ОКНО МАГАЗИНА */
+#shop{
+ display:none;
+ position:fixed;
+ left:8px;
+ right:8px;
+ bottom:65px;
+ max-height:55vh;
+ overflow-y:auto;
+ overflow-x:hidden;
+ flex-wrap:wrap;
+ justify-content:center;
+ padding:12px;
+ background:#102a34f5;
+ border:1px solid #52717a;
+ border-radius:14px;
+ z-index:99;
+}
+
+#shop button{
+ flex:1 1 105px;
+ min-width:105px;
+}
 #message{position:absolute;top:120px;left:50%;transform:translateX(-50%);background:#173b34;border:1px solid #43816b;padding:9px 14px;border-radius:9px;font-size:12px;display:none;white-space:nowrap;max-width:90%}
 @media(max-width:380px){
  .stat{font-size:7px;padding:5px 2px}
