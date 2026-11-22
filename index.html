@@ -595,118 +595,141 @@ function makePanel(x,z,watt){
  return g;
 }
 
- 
-function makeInverter(x,z){
+ function makeInverter(x,z){
  const g=new THREE.Group();
 
- const bodyMat=material(0x303a42,.32,.78);
- const darkMat=material(0x151c22,.5,.65);
- const metalMat=material(0x89949b,.3,.85);
- const screenMat=material(0x071b20,.18,.35);
- const greenMat=new THREE.MeshStandardMaterial({
-  color:0x20ff82,
-  emissive:0x00cc55,
-  emissiveIntensity:1.5
- });
+ const white=material(0xe8ebed,.28,.55);
+ const black=material(0x111820,.3,.65);
+ const silver=material(0x9ba5aa,.25,.85);
+ const ventMat=material(0x252c31,.5,.65);
 
- // Основной корпус
+ // Основной белый корпус
  const body=new THREE.Mesh(
-  new THREE.BoxGeometry(1.35,1.9,.65),
-  bodyMat
+  new THREE.BoxGeometry(1.5,2.05,.72),
+  white
  );
- body.position.y=1.05;
+ body.position.y=1.12;
  body.castShadow=true;
  body.receiveShadow=true;
  g.add(body);
 
  // Верхняя крышка
- const top=new THREE.Mesh(
-  new THREE.BoxGeometry(1.39,.09,.69),
-  metalMat
+ const cap=new THREE.Mesh(
+  new THREE.BoxGeometry(1.48,.07,.73),
+  silver
  );
- top.position.y=2.02;
- g.add(top);
+ cap.position.y=2.155;
+ g.add(cap);
 
- // Нижняя крышка
- const bottom=new THREE.Mesh(
-  new THREE.BoxGeometry(1.39,.09,.69),
-  metalMat
+ // Чёрная лицевая панель
+ const face=new THREE.Mesh(
+  new THREE.BoxGeometry(1.13,1.65,.035),
+  black
  );
- bottom.position.y=.08;
- g.add(bottom);
+ face.position.set(0,1.22,.38);
+ g.add(face);
 
- // Передняя панель
- const front=new THREE.Mesh(
-  new THREE.BoxGeometry(1.08,1.48,.035),
-  darkMat
- );
- front.position.set(0,1.12,.345);
- g.add(front);
-
- // Экран
+ // Дисплей
  const screen=new THREE.Mesh(
-  new THREE.BoxGeometry(.55,.28,.025),
-  screenMat
+  new THREE.BoxGeometry(.64,.38,.025),
+  material(0x071e28,.15,.25)
  );
- screen.position.set(0,1.72,.37);
+ screen.position.set(0,1.78,.41);
  g.add(screen);
 
- // Свечение экрана
- const display=new THREE.Mesh(
-  new THREE.BoxGeometry(.43,.035,.012),
-  greenMat
+ // Экранная рамка
+ const frame=new THREE.Mesh(
+  new THREE.BoxGeometry(.70,.44,.018),
+  silver
  );
- display.position.set(0,1.76,.39);
- g.add(display);
+ frame.position.set(0,1.78,.395);
+ g.add(frame);
+ screen.position.z=.415;
+
+ // Логотип DEYE
+ const canvas=document.createElement('canvas');
+ canvas.width=512;
+ canvas.height=128;
+ const ctx=canvas.getContext('2d');
+ ctx.clearRect(0,0,512,128);
+ ctx.fillStyle='#ffffff';
+ ctx.font='bold 76px Arial';
+ ctx.textAlign='center';
+ ctx.fillText('DEYE',256,88);
+
+ const logoTexture=new THREE.CanvasTexture(canvas);
+ const logo=new THREE.Mesh(
+  new THREE.PlaneGeometry(.62,.155),
+  new THREE.MeshBasicMaterial({
+   map:logoTexture,
+   transparent:true
+  })
+ );
+ logo.position.set(0,1.42,.405);
+ g.add(logo);
+
+ // Нижние вентиляционные отверстия
+ for(let i=0;i<9;i++){
+  const vent=new THREE.Mesh(
+   new THREE.BoxGeometry(.72,.025,.025),
+   ventMat
+  );
+  vent.position.set(0,.42+i*.065,.405);
+  g.add(vent);
+ }
+
+ // Боковые вентиляционные прорези
+ for(let side of [-1,1]){
+  for(let i=0;i<6;i++){
+   const vent=new THREE.Mesh(
+    new THREE.BoxGeometry(.025,.045,.42),
+    ventMat
+   );
+   vent.position.set(side*.755,.65+i*.085,0);
+   g.add(vent);
+  }
+ }
+
+ // Нижняя панель подключений
+ const connectorPanel=new THREE.Mesh(
+  new THREE.BoxGeometry(1.15,.22,.48),
+  black
+ );
+ connectorPanel.position.set(0,.12,.05);
+ g.add(connectorPanel);
+
+ // Кабельные разъёмы
+ for(let i=0;i<5;i++){
+  const connector=new THREE.Mesh(
+   new THREE.CylinderGeometry(.065,.065,.13,20),
+   silver
+  );
+  connector.rotation.x=Math.PI/2;
+  connector.position.set(-.46+i*.23,.12,.32);
+  g.add(connector);
+ }
 
  // Индикаторы
- for(let i=0;i<3;i++){
-  const led=new THREE.Mesh(
-   new THREE.SphereGeometry(.035,12,12),
-   greenMat
-  );
-  led.position.set(-.32+i*.12,1.72,.39);
-  g.add(led);
- }
+ const ledMat=new THREE.MeshStandardMaterial({
+  color:0x21ff80,
+  emissive:0x00cc55,
+  emissiveIntensity:1.2
+ });
 
- // Вентиляционные решётки
- for(let i=0;i<7;i++){
-  const vent=new THREE.Mesh(
-   new THREE.BoxGeometry(.68,.035,.025),
-   metalMat
-  );
-  vent.position.set(0,.95+i*.085,.37);
-  g.add(vent);
- }
+ const led=new THREE.Mesh(
+  new THREE.SphereGeometry(.035,16,16),
+  ledMat
+ );
+ led.position.set(.43,1.78,.43);
+ g.add(led);
 
- // Боковые вентиляционные отверстия
- for(let i=0;i<5;i++){
-  const vent=new THREE.Mesh(
-   new THREE.BoxGeometry(.025,.055,.35),
-   darkMat
-  );
-  vent.position.set(.68,.65+i*.12,0);
-  g.add(vent);
- }
-
- // Нижние кабельные вводы
- for(let i=0;i<3;i++){
-  const cable=new THREE.Mesh(
-   new THREE.CylinderGeometry(.055,.055,.16,16),
-   darkMat
-  );
-  cable.rotation.x=Math.PI/2;
-  cable.position.set(-.35+i*.35,.08,.15);
-  g.add(cable);
- }
-
- // Боковые металлические крепления
+ // Боковые крепления
  for(let side of [-1,1]){
   const mount=new THREE.Mesh(
-   new THREE.BoxGeometry(.09,.32,.72),
-   metalMat
+   new THREE.BoxGeometry(.08,.4,.65),
+   silver
   );
-  mount.position.set(side*.69,.55,0);
+  mount.position.set(side*.77,.75,0);
   g.add(mount);
  }
 
