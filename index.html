@@ -810,7 +810,7 @@ function rebuild(){
  state.inverters.forEach((v,i)=>{
   const x=5.5+(i%2)*1.2;
   const z=-5+Math.floor(i/2)*1.3;
-  const obj=makeInverter(x,z);
+  const obj=makeInverter(x,z,v.kw);
   placed.push(obj);inverterObjects.push({obj,x,z});
  });
 
