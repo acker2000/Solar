@@ -667,7 +667,30 @@ function makePanel(x,z,watt){
  );
  logo.position.set(0,1.42,.405);
  g.add(logo);
+ // Мощность инвертора
+ const powerCanvas=document.createElement('canvas');
+ powerCanvas.width=512;
+ powerCanvas.height=128;
 
+ const powerCtx=powerCanvas.getContext('2d');
+ powerCtx.clearRect(0,0,512,128);
+ powerCtx.fillStyle='#ffffff';
+ powerCtx.font='bold 76px Arial';
+ powerCtx.textAlign='center';
+ powerCtx.fillText((kw || 5)+' kW',256,88);
+
+ const powerTexture=new THREE.CanvasTexture(powerCanvas);
+
+ const powerLabel=new THREE.Mesh(
+  new THREE.PlaneGeometry(.65,.16),
+  new THREE.MeshBasicMaterial({
+   map:powerTexture,
+   transparent:true
+  })
+ );
+
+ powerLabel.position.set(0,1.20,.405);
+ g.add(powerLabel);
  // Нижние вентиляционные отверстия
  for(let i=0;i<9;i++){
   const vent=new THREE.Mesh(
