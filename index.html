@@ -346,13 +346,6 @@ function save(){
  catch(e){console.warn("Ошибка сохранения",e)}
 }
 
- const data=localStorage.getItem(SAVE_KEY);
- if(!data){
-  alert("Сохранение не найдено");
-  return;
- }
- window.prompt("Скопируй всё сохранение:",data);
-}
 /* ЭЛЕКТРОСТАНЦИЯ */
  
  const data=prompt("Вставь сохранение из Telegram:");
