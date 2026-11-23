@@ -323,6 +323,11 @@ try{
 
 if(!Array.isArray(state.panels))state.panels=[];
 if(!Array.isArray(state.inverters))state.inverters=[];
+ state.panels.forEach((p,i)=>{
+ p.x=-5+(i%5)*2.0;
+ p.z=-5+Math.floor(i/5)*1.8;
+});
+save();
 if(!state.lastTime)state.lastTime=Date.now();
 if(!state.lastKyivDate)state.lastKyivDate=kyivParts(Date.now()).date;
 if(!state.weather)state.weather=weatherForDay(state.day);
