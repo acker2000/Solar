@@ -347,7 +347,14 @@ function save(){
  try{localStorage.setItem(SAVE_KEY,JSON.stringify(state))}
  catch(e){console.warn("Ошибка сохранения",e)}
 }
-
+function exportSave(){
+ const data=localStorage.getItem(SAVE_KEY);
+ if(!data){
+  alert("Сохранение не найдено");
+  return;
+ }
+ window.prompt("Скопируй всё сохранение:",data);
+}
 /* ЭЛЕКТРОСТАНЦИЯ */
 function getInstalledPower(){
  return state.panels.reduce((sum,p)=>sum+(Number(p.watt)||0),0)/1000;
