@@ -529,65 +529,86 @@ for(const x of [-6,6]){
 
 /* ОБОРУДОВАНИЕ */
 
+
 function makePanel(x,z,watt){
  const g=new THREE.Group();
- const frame=material(0x9ba6aa,.28,.85);
- const cellMat=material(0x102c50,.19,.55);
- const backMat=material(0x303a3e,.65,.65);
- const busMat=material(0xaab7bd,.3,.8);
+
+ const frame=material(0xb8bec1,.25,.85);
+ const cellMat=material(0x111316,.2,.55);
+ const backMat=material(0x30363a,.6,.7);
+ const lineMat=material(0x41474a,.35,.65);
+ const centerMat=material(0xe3e6e7,.25,.8);
+
  const surface=new THREE.Group();
  surface.position.y=.85;
 
- // Задняя металлическая основа
+ // Задняя основа
  box(1.95,.055,1.12,backMat,0,0,0,surface);
 
- // Алюминиевая рамка по периметру
+ // Алюминиевая рамка
  box(1.98,.065,.055,frame,0,.035,-.555,surface);
  box(1.98,.065,.055,frame,0,.035,.555,surface);
  box(.055,.065,1.06,frame,-.96,.035,0,surface);
  box(.055,.065,1.06,frame,.96,.035,0,surface);
 
- // Фотоэлементы: 60 отдельных ячеек
- for(let r=0;r<6;r++){
-  for(let c=0;c<10;c++){
-   box(
-    .169,.009,.145,
-    cellMat,
-    -.82+c*.18,
-    .034,
-    -.45+r*.15,
-    surface
-   );
+ // 120 фотоэлементов: 2 половины по 60
+ for(let side of [-1,1]){
+  for(let r=0;r<6;r++){
+   for(let c=0;c<10;c++){
+
+    const px=side*(.055+c*.088);
+    const pz=-.4075+r*.163;
+
+    // Тёмный фотоэлемент
+    box(
+     .078,.012,.151,
+     cellMat,
+     px,.037,pz,
+     surface
+    );
+
+    // Тонкие линии на фотоэлементе
+    for(let k=0;k<4;k++){
+     box(
+      .069,.002,.003,
+      lineMat,
+      px,.044,
+      pz-.052+k*.034,
+      surface
+     );
+    }
+   }
   }
  }
 
- // Металлические токопроводящие линии
- for(let c=0;c<10;c++){
-  box(.007,.004,.91,busMat,-.82+c*.18,.041,0,surface);
- }
+ // Центральная белая полоса
+ // Строго по центру панели
+ box(
+  .035,.018,.99,
+  centerMat,
+  0,.045,0,
+  surface
+ );
 
- for(let r=0;r<=6;r++){
-  box(1.78,.004,.006,busMat,0,.041,-.455+r*.15,surface);
- }
-
- // Защитное стекло с лёгкой прозрачностью
+ // Защитное стекло
  const glass=new THREE.Mesh(
-  new THREE.BoxGeometry(1.84,.008,.98),
+  new THREE.BoxGeometry(1.84,.006,.98),
   new THREE.MeshPhysicalMaterial({
-   color:0x9bbbd0,
+   color:0xffffff,
    roughness:.12,
-   metalness:.15,
+   metalness:.08,
    transparent:true,
-   opacity:.13,
+   opacity:.07,
    clearcoat:1,
    clearcoatRoughness:.08,
    depthWrite:false
   })
  );
- glass.position.set(0,.049,0);
+
+ glass.position.set(0,.052,0);
  surface.add(glass);
 
- // Нижние крепёжные направляющие
+ // Нижние металлические направляющие
  box(2.05,.07,.09,metalMat,0,-.12,-.42,surface);
  box(2.05,.07,.09,metalMat,0,-.12,.42,surface);
 
@@ -601,8 +622,10 @@ function makePanel(x,z,watt){
 
  g.position.set(x,0,z);
  scene.add(g);
+
  return g;
 }
+
 
  function makeInverter(x,z,kw){
  const g=new THREE.Group();
