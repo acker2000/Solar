@@ -533,7 +533,7 @@ for(const x of [-6,6]){
 function makePanel(x,z,watt){
  const g=new THREE.Group();
 
- const frame=material(0xb8bec1,.25,.85);
+ const frame=material(0xd0d4d6,.3,.9);
  const cellMat=material(0x111316,.2,.55);
  const backMat=material(0x30363a,.6,.7);
  const lineMat=material(0x41474a,.35,.65);
@@ -546,10 +546,10 @@ function makePanel(x,z,watt){
  box(1.95,.055,1.12,backMat,0,0,0,surface);
 
  // Алюминиевая рамка
- box(1.98,.065,.055,frame,0,.035,-.555,surface);
- box(1.98,.065,.055,frame,0,.035,.555,surface);
- box(.055,.065,1.06,frame,-.96,.035,0,surface);
- box(.055,.065,1.06,frame,.96,.035,0,surface);
+ box(1.98,.025,.025,frame,0,.035,-.555,surface);
+box(1.98,.025,.025,frame,0,.035,.555,surface);
+box(.025,.025,1.06,frame,-.96,.035,0,surface);
+box(.025,.025,1.06,frame,.96,.035,0,surface);
 
  // 120 фотоэлементов: 2 половины по 60
  for(let side of [-1,1]){
