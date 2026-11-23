@@ -1108,7 +1108,7 @@ function buyPanel(watt){
  if(state.money<price)return notify("Недостаточно денег");
 
  const count=state.panels.length;
- const x=-5+(count%5)*2.2;
+ const x=-5+(count%5)*2.0;
  const z=-5+Math.floor(count/5)*1.8;
  if(z>5)return notify("Место на участке закончилось");
 
