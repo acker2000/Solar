@@ -348,22 +348,6 @@ function save(){
 
 /* ЭЛЕКТРОСТАНЦИЯ */
  
- 
- 
-
- try{
-  const parsed=JSON.parse(data);
-  if(!parsed||typeof parsed!=="object"||!Array.isArray(parsed.panels)||!Array.isArray(parsed.inverters)){
-   alert("Неверный формат сохранения");
-   return;
-  }
-  localStorage.setItem(SAVE_KEY,JSON.stringify(parsed));
-  alert("Сохранение загружено!");
-  location.reload();
- }catch(e){
-  alert("Ошибка! Проверь скопированный текст.");
- }
-}
 function getInstalledPower(){
  return state.panels.reduce((sum,p)=>sum+(Number(p.watt)||0),0)/1000;
 }
