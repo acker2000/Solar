@@ -244,10 +244,8 @@ function kyivParts(timestamp){
 }
 
 function weatherForDay(d){
- const types=["Ясно","Переменная облачность","Облачно","Дождь"];
- return types[(d*17+Math.floor(d/3)*7)%types.length];
+ return "Ясно";
 }
-
 /* РЕАЛЬНАЯ ПОГОДА КИЕВА */
 let realWeather = {
  cloud: null,
