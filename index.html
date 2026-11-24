@@ -980,9 +980,16 @@ canvas.addEventListener("wheel",e=>{
 updateCameraPosition();
 
 /* ОСВЕЩЕНИЕ И ВРЕМЯ */
+
 function updateLighting(){
  const p=kyivParts(Date.now());
  const minuteOfDay=p.hour*60+p.minute+p.second/60;
+
+ let label="Ночь";
+ if(minuteOfDay>=240&&minuteOfDay<540) label="Утро";
+ else if(minuteOfDay>=540&&minuteOfDay<1080) label="День";
+ else if(minuteOfDay>=1080&&minuteOfDay<1260) label="Вечер";
+
  const sunTimes=getKyivSunTimes(p);
  const sunrise=sunTimes.sunrise,sunset=sunTimes.sunset;
  const dayLength=Math.max(1,sunset-sunrise);
@@ -993,30 +1000,38 @@ function updateLighting(){
  const dawnGlow=Math.max(0,1-Math.abs(minuteOfDay-sunrise)/90);
  const duskGlow=Math.max(0,1-Math.abs(minuteOfDay-sunset)/90);
  const twilight=Math.max(dawnGlow,duskGlow);
- const daySky=new THREE.Color(0x9bc8e5),nightSky=new THREE.Color(0x071426),sunsetSky=new THREE.Color(0xe68c58);
+
+ const daySky=new THREE.Color(0x9bc8e5);
+ const nightSky=new THREE.Color(0x071426);
+ const sunsetSky=new THREE.Color(0xe68c58);
+
  let sky=nightSky.clone().lerp(daySky,Math.min(1,daylight*1.25));
  sky.lerp(sunsetSky,twilight*.55);
- scene.background.copy(sky);scene.fog.color.copy(sky);
- sun.intensity=.04+daylight*1.9;ambient.intensity=.18+daylight*1.12;moonLight.intensity=.04+night*.28;
+ scene.background.copy(sky);
+ scene.fog.color.copy(sky);
+
+ sun.intensity=.04+daylight*1.9;
+ ambient.intensity=.18+daylight*1.12;
+ moonLight.intensity=.04+night*.28;
+
  const sunHeight=isDay?Math.max(.5,Math.sin(Math.PI*progress)*25):-.5;
  const sunAngle=(progress-.5)*Math.PI;
+
  sunBall.position.set(-Math.sin(sunAngle)*35,sunHeight+3,5);
  sunBall.visible=isDay;
  sunBall.material.color.setHex(twilight>.25?0xffa75c:0xffdf88);
  sun.position.set(sunBall.position.x+10,Math.max(4,sunHeight+18),sunBall.position.z+8);
+
  moon.position.set(Math.sin(sunAngle+Math.PI)*25,16+night*12,-20);
  moon.visible=!isDay||daylight<.08;
  stars.material.opacity=night>.7?night:0;
- lamps.forEach(l=>{l.intensity=night>.45?1.8:
-  let label="Ночь";
 
-if(minuteOfDay>=240&&minuteOfDay<540)
- label="Утро";
-else if(minuteOfDay>=540&&minuteOfDay<1080)
- label="День";
-else if(minuteOfDay>=1080&&minuteOfDay<1260)
- label="Вечер";
- document.getElementById("clock").textContent=String(p.hour).padStart(2,"0")+":"+String(p.minute).padStart(2,"0");
+ lamps.forEach(l=>{
+  l.intensity=night>.45?1.8:0;
+ });
+
+ document.getElementById("clock").textContent=
+  String(p.hour).padStart(2,"0")+":"+String(p.minute).padStart(2,"0");
  document.getElementById("sunstate").textContent=label;
 }
 
