@@ -1007,15 +1007,15 @@ function updateLighting(){
  moon.position.set(Math.sin(sunAngle+Math.PI)*25,16+night*12,-20);
  moon.visible=!isDay||daylight<.08;
  stars.material.opacity=night>.7?night:0;
- lamps.forEach(l=>{l.intensity=night>.45?1.8:0});
- let label="Ночь";
+ lamps.forEach(l=>{l.intensity=night>.45?1.8:
+  let label="Ночь";
 
-if(minuteOfDay>=sunrise&&minuteOfDay<sunrise+120)
-  label="Утро";
-else if(minuteOfDay>=sunrise+120&&minuteOfDay<sunset-90)
-  label="День";
-else if(minuteOfDay>=sunset-90&&minuteOfDay<sunset+90)
-  label="Вечер";
+if(minuteOfDay>=240&&minuteOfDay<540)
+ label="Утро";
+else if(minuteOfDay>=540&&minuteOfDay<1080)
+ label="День";
+else if(minuteOfDay>=1080&&minuteOfDay<1260)
+ label="Вечер";
  document.getElementById("clock").textContent=String(p.hour).padStart(2,"0")+":"+String(p.minute).padStart(2,"0");
  document.getElementById("sunstate").textContent=label;
 }
