@@ -358,21 +358,43 @@ function getInverterPower(){
  return state.inverters.reduce((sum,i)=>sum+(Number(i.kw)||0),0);
 }
 
+
 function getSolarOutput(timestamp=Date.now()){
  const p=kyivParts(timestamp);
  const minuteOfDay=p.hour*60+p.minute+p.second/60;
- const sunTimes=getKyivSunTimes(p);
- const sunrise=sunTimes.sunrise;
- const sunset=sunTimes.sunset;
 
- const date=new Date(Date.UTC(p.year,p.month-1,p.day));
- const yearStart=new Date(Date.UTC(p.year,0,1));
- const dayOfYear=Math.floor((date-yearStart)/86400000)+1;
- const season=Math.cos(2*Math.PI*(dayOfYear-172)/365.25);
-
- if(state.panels.length===0||sunrise===sunset||minuteOfDay<=sunrise||minuteOfDay>=sunset){
+ if(state.panels.length===0){
   return {dc:0,ac:0,grid:0};
  }
+
+ let sunFactor=0;
+
+ // Утро: 04:00–09:00
+ if(minuteOfDay>=240&&minuteOfDay<540){
+  sunFactor=(minuteOfDay-240)/300;
+ }
+
+ // День: 09:00–18:00
+ else if(minuteOfDay>=540&&minuteOfDay<1080){
+  sunFactor=1;
+ }
+
+ // Вечер: 18:00–21:00
+ else if(minuteOfDay>=1080&&minuteOfDay<1260){
+  sunFactor=(1260-minuteOfDay)/180;
+ }
+
+ // Летняя температура
+ const temperature=25;
+ const temperatureFactor=1;
+
+ const dc=getInstalledPower()*sunFactor*temperatureFactor;
+ const ac=Math.min(dc,getInverterPower())*.97;
+ const grid=Math.min(ac,100);
+
+ return {dc,ac,grid};
+}
+
 
  let sunFactor=0;
 
