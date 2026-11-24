@@ -990,12 +990,16 @@ function updateLighting(){
  else if(minuteOfDay>=540&&minuteOfDay<1080) label="День";
  else if(minuteOfDay>=1080&&minuteOfDay<1260) label="Вечер";
 
- const sunTimes=getKyivSunTimes(p);
- const sunrise=sunTimes.sunrise,sunset=sunTimes.sunset;
- const dayLength=Math.max(1,sunset-sunrise);
- const progress=(minuteOfDay-sunrise)/dayLength;
- const isDay=minuteOfDay>sunrise&&minuteOfDay<sunset;
- const daylight=isDay?Math.max(0,Math.sin(Math.PI*progress)):0;
+ const sunrise=240;
+const sunset=1260;
+const dayLength=sunset-sunrise;
+const progress=(minuteOfDay-sunrise)/dayLength;
+const isDay=minuteOfDay>=540&&minuteOfDay<1080;
+const daylight=isDay?1:
+ minuteOfDay>=240&&minuteOfDay<540
+ ?(minuteOfDay-240)/300:
+ minuteOfDay>=1080&&minuteOfDay<1260
+ ?(1260-minuteOfDay)/180:0;
  const night=1-daylight;
  const dawnGlow=Math.max(0,1-Math.abs(minuteOfDay-sunrise)/90);
  const duskGlow=Math.max(0,1-Math.abs(minuteOfDay-sunset)/90);
