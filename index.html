@@ -653,20 +653,43 @@ box(.025,.025,1.06,frame,.96,.035,0,surface);
  g.add(face);
 
  // Дисплей
+ 
+ // Дисплей
  const screen=new THREE.Mesh(
-  new THREE.BoxGeometry(.64,.38,.025),
-  material(0x071e28,.15,.25)
+  new THREE.BoxGeometry(.92,.62,.025),
+  new THREE.MeshBasicMaterial({color:0x061b20})
  );
- screen.position.set(0,1.78,.41);
+ screen.position.set(0,1.78,.415);
  g.add(screen);
 
- // Экранная рамка
+ // Рамка дисплея
  const frame=new THREE.Mesh(
-  new THREE.BoxGeometry(.70,.44,.018),
+  new THREE.BoxGeometry(.98,.68,.018),
   silver
  );
  frame.position.set(0,1.78,.395);
  g.add(frame);
+
+ // Данные на дисплее
+ const displayCanvas=document.createElement("canvas");
+ displayCanvas.width=512;
+ displayCanvas.height=352;
+
+ const displayCtx=displayCanvas.getContext("2d");
+
+ const displayTexture=new THREE.CanvasTexture(displayCanvas);
+
+ const displayLabel=new THREE.Mesh(
+  new THREE.PlaneGeometry(.88,.58),
+  new THREE.MeshBasicMaterial({
+   map:displayTexture,
+   transparent:false
+  })
+ );
+
+ displayLabel.position.set(0,1.78,.435);
+ g.add(displayLabel);
+
  screen.position.z=.415;
 
  // Логотип DEYE
