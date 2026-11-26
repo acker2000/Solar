@@ -1134,6 +1134,12 @@ function updateUI(){
  const kyiv=kyivParts(now);
  const monthNames=["янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"];
  const live=getSolarOutput(now);
+  // Обновление физических дисплеев инверторов
+ placed.forEach(obj=>{
+  if(obj.userData && typeof obj.userData.updateDisplay==="function"){
+   obj.userData.updateDisplay(live);
+  }
+ });
 
  document.getElementById("gameDate").textContent=
   kyiv.day+" "+monthNames[kyiv.month-1]+" "+kyiv.year;
