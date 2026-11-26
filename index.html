@@ -1120,6 +1120,7 @@ canvas.addEventListener("pointermove",e=>{
   cameraTarget.x=Math.max(-12,Math.min(12,cameraTarget.x));
   cameraTarget.z=Math.max(-12,Math.min(12,cameraTarget.z));
   updateCameraPosition();
+
  }else if(pointers.size>=2){
   const distance=pinchDistance();
   if(previousPinch>0&&distance>0){
@@ -1147,6 +1148,46 @@ canvas.addEventListener("wheel",e=>{
 },{passive:false});
 
 updateCameraPosition();
+   // ОТКРЫТИЕ ОКНА ИНВЕРТОРА
+function openInverterModal(){
+ const modal=document.getElementById("inverterModal");
+ modal.style.display="flex";
+ updateInverterModal();
+}
+
+function closeInverterModal(){
+ document.getElementById("inverterModal").style.display="none";
+}
+
+// Обновление показаний большого экрана
+function updateInverterModal(){
+ document.getElementById("modalInstalled").textContent=
+  getInstalledPower().toFixed(2)+" kWp";
+
+ document.getElementById("modalOutput").textContent=
+  getSolarOutput().ac.toFixed(2)+" kW";
+}
+
+// Распознавание нажатия на 3D-дисплей
+const inverterRaycaster=new THREE.Raycaster();
+const inverterPointer=new THREE.Vector2();
+
+canvas.addEventListener("click",e=>{
+ inverterPointer.x=(e.clientX/innerWidth)*2-1;
+ inverterPointer.y=-(e.clientY/innerHeight)*2+1;
+
+ inverterRaycaster.setFromCamera(inverterPointer,camera);
+
+ const hits=inverterRaycaster.intersectObjects(placed,true);
+
+ const screenHit=hits.find(hit=>
+  hit.object.userData.isInverterScreen===true
+ );
+
+ if(screenHit){
+  openInverterModal();
+ }
+});
 
 /* ОСВЕЩЕНИЕ И ВРЕМЯ */
 
