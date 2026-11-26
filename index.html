@@ -1306,6 +1306,9 @@ function updateUI(){
  const kyiv=kyivParts(now);
  const monthNames=["янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"];
  const live=getSolarOutput(now);
+ if(document.getElementById("inverterModal")?.style.display==="flex"){
+ updateInverterModal();
+}
   // Обновление физических дисплеев инверторов
  placed.forEach(obj=>{
   if(obj.userData && typeof obj.userData.updateDisplay==="function"){
