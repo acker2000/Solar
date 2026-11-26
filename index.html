@@ -282,7 +282,32 @@ margin-bottom:6px;pointer-events:auto;font-size:10px">
 </div>
 
 
+<!-- ОКНО ИНВЕРТОРА -->
+<div id="inverterModal">
+ <div class="monitor-box">
 
+  <div class="monitor-header">
+   <div class="monitor-title">☀ DEYE INVERTER</div>
+   <button class="monitor-close"
+    onclick="closeInverterModal()">✕</button>
+  </div>
+
+  <div class="monitor-value">
+   <span>ОБЩАЯ МОЩНОСТЬ ПАНЕЛЕЙ</span>
+   <b id="modalInstalled">0.00 kWp</b>
+  </div>
+
+  <div class="monitor-value">
+   <span>ТЕКУЩАЯ ГЕНЕРАЦИЯ</span>
+   <b id="modalOutput">0.00 kW</b>
+  </div>
+
+  <div class="monitor-footer">
+   SOLAR TYCOON 3D
+  </div>
+
+ </div>
+</div>
 <script>
 /* СОХРАНЕНИЕ */
 const SAVE_KEY="solar_tycoon_kyiv_v2";
@@ -754,6 +779,8 @@ box(.025,.025,1.06,frame,.96,.035,0,surface);
 
  displayLabel.position.set(0,1.78,.435);
  g.add(displayLabel);
+  // Делаем дисплей интерактивным
+displayLabel.userData.isInverterScreen=true;
  // Обновление информации на дисплее
  g.userData.updateDisplay = function(live=getSolarOutput()){
   const installed=getInstalledPower();
