@@ -653,8 +653,6 @@ box(.025,.025,1.06,frame,.96,.035,0,surface);
  g.add(face);
 
  // Дисплей
- 
- // Дисплей
  const screen=new THREE.Mesh(
   new THREE.BoxGeometry(.92,.62,.025),
   new THREE.MeshBasicMaterial({color:0x061b20})
@@ -689,7 +687,36 @@ box(.025,.025,1.06,frame,.96,.035,0,surface);
 
  displayLabel.position.set(0,1.78,.435);
  g.add(displayLabel);
+   // Обновление информации на дисплее
+ g.userData.updateDisplay = function(live=getSolarOutput()){
+  const installed=getInstalledPower();
+  const current=live.ac;
 
+  displayCtx.fillStyle="#061b20";
+  displayCtx.fillRect(0,0,512,352);
+
+  displayCtx.fillStyle="#8faeb3";
+  displayCtx.font="bold 30px Arial";
+  displayCtx.fillText("SOLAR INVERTER",24,45);
+
+  displayCtx.fillStyle="#8faeb3";
+  displayCtx.font="24px Arial";
+  displayCtx.fillText("TOTAL INSTALLED",24,112);
+
+  displayCtx.fillStyle="#ffffff";
+  displayCtx.font="bold 48px Arial";
+  displayCtx.fillText(installed.toFixed(2)+" kWp",24,166);
+
+  displayCtx.fillStyle="#8faeb3";
+  displayCtx.font="24px Arial";
+  displayCtx.fillText("CURRENT OUTPUT",24,232);
+
+  displayCtx.fillStyle="#48f0a4";
+  displayCtx.font="bold 48px Arial";
+  displayCtx.fillText(current.toFixed(2)+" kW",24,290);
+
+  displayTexture.needsUpdate=true;
+ };
  screen.position.z=.415;
 
  // Логотип DEYE
