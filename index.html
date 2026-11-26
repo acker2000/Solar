@@ -687,33 +687,70 @@ box(.025,.025,1.06,frame,.96,.035,0,surface);
 
  displayLabel.position.set(0,1.78,.435);
  g.add(displayLabel);
-   // Обновление информации на дисплее
+ // Обновление информации на дисплее
  g.userData.updateDisplay = function(live=getSolarOutput()){
   const installed=getInstalledPower();
   const current=live.ac;
 
-  displayCtx.fillStyle="#061b20";
-  displayCtx.fillRect(0,0,512,352);
+  const ctx=displayCtx;
 
-  displayCtx.fillStyle="#8faeb3";
-  displayCtx.font="bold 36px Arial";
-  displayCtx.fillText("SOLAR INVERTER",24,45);
+  // Фон экрана
+  const gradient=ctx.createLinearGradient(0,0,0,352);
+  gradient.addColorStop(0,"#102d35");
+  gradient.addColorStop(1,"#06151b");
 
-  displayCtx.fillStyle="#8faeb3";
-  displayCtx.font="30px Arial";
-  displayCtx.fillText("TOTAL INSTALLED",24,112);
+  ctx.fillStyle=gradient;
+  ctx.fillRect(0,0,512,352);
 
-  displayCtx.fillStyle="#ffffff";
-  displayCtx.font="bold 58px Arial";
-  displayCtx.fillText(installed.toFixed(2)+" kWp",24,166);
+  // Заголовок
+  ctx.fillStyle="#ffffff";
+  ctx.font="bold 34px Arial";
+  ctx.textAlign="left";
+  ctx.fillText("SOLAR INVERTER",22,39);
 
-  displayCtx.fillStyle="#8faeb3";
-  displayCtx.font="24px Arial";
-  displayCtx.fillText("CURRENT OUTPUT",24,232);
+  // Индикатор работы
+  ctx.beginPath();
+  ctx.arc(475,27,9,0,Math.PI*2);
+  ctx.fillStyle=current>0.01?"#36ff91":"#718087";
+  ctx.fill();
 
-  displayCtx.fillStyle="#48f0a4";
-  displayCtx.font="bold 48px Arial";
-  displayCtx.fillText(current.toFixed(2)+" kW",24,290);
+  // Разделитель
+  ctx.fillStyle="#31515a";
+  ctx.fillRect(20,55,472,2);
+
+  // Установленная мощность
+  ctx.fillStyle="#8faeb3";
+  ctx.font="bold 25px Arial";
+  ctx.fillText("TOTAL INSTALLED",22,94);
+
+  ctx.fillStyle="#ffffff";
+  ctx.font="bold 54px Arial";
+  ctx.fillText(installed.toFixed(2)+" kWp",22,151);
+
+  // Разделитель
+  ctx.fillStyle="#31515a";
+  ctx.fillRect(20,174,472,2);
+
+  // Текущая генерация
+  ctx.fillStyle="#8faeb3";
+  ctx.font="bold 25px Arial";
+  ctx.fillText("CURRENT OUTPUT",22,213);
+
+  ctx.fillStyle="#48f0a4";
+  ctx.font="bold 54px Arial";
+  ctx.fillText(current.toFixed(2)+" kW",22,270);
+
+  // Нижний статус
+  ctx.fillStyle=current>0.01?"#48f0a4":"#8faeb3";
+  ctx.font="bold 22px Arial";
+  ctx.fillText(
+   current>0.01?"GENERATING":"STANDBY",
+   22,326
+  );
+
+  // Нижняя линия
+  ctx.fillStyle="#31515a";
+  ctx.fillRect(20,337,472,2);
 
   displayTexture.needsUpdate=true;
  };
