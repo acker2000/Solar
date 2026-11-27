@@ -638,35 +638,51 @@ box(1.98,.025,.025,frame,0,.035,.555,surface);
 box(.025,.025,1.06,frame,-.96,.035,0,surface);
 box(.025,.025,1.06,frame,.96,.035,0,surface);
 
- // 120 фотоэлементов: 2 половины по 60
- for(let side of [-1,1]){
-  for(let r=0;r<6;r++){
-   for(let c=0;c<10;c++){
 
-    const px=side*(.055+c*.0933);
-    const pz=-.45+r*.18;
+  // Оптимизированные фотоэлементы
+  const cells=new THREE.InstancedMesh(
+   new THREE.BoxGeometry(.09,.012,.17),
+   cellMat,
+   120
+  );
 
-    // Тёмный фотоэлемент
-    box(
-     .09,.012,.17,
-     cellMat,
-     px,.037,pz,
-     surface
-    );
+  const lines=new THREE.InstancedMesh(
+   new THREE.BoxGeometry(.069,.002,.003),
+   lineMat,
+   480
+  );
 
-    // Тонкие линии на фотоэлементе
-    for(let k=0;k<4;k++){
-     box(
-      .069,.002,.003,
-      lineMat,
-      px,.044,
-      pz-.052+k*.034,
-      surface
-     );
+  const dummy=new THREE.Object3D();
+  let ci=0;
+  let li=0;
+
+  for(const side of [-1,1]){
+   for(let r=0;r<6;r++){
+    for(let c=0;c<10;c++){
+     const px=side*(.055+c*.0933);
+     const pz=-.45+r*.18;
+
+     dummy.position.set(px,.037,pz);
+     dummy.updateMatrix();
+     cells.setMatrixAt(ci++,dummy.matrix);
+
+     for(let k=0;k<4;k++){
+      dummy.position.set(
+       px,.044,pz-.052+k*.034
+      );
+      dummy.updateMatrix();
+      lines.setMatrixAt(li++,dummy.matrix);
+     }
     }
    }
   }
- }
+
+  cells.instanceMatrix.needsUpdate=true;
+  lines.instanceMatrix.needsUpdate=true;
+
+  surface.add(cells);
+  surface.add(lines);
+
 
  // Центральная белая полоса
  // Строго по центру панели
