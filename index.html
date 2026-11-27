@@ -1035,11 +1035,52 @@ const cableBlack=new THREE.MeshStandardMaterial({color:0x20272a,roughness:.7});
 const cableRed=new THREE.MeshStandardMaterial({color:0x9d2925,roughness:.65});
 const cableBlue=new THREE.MeshStandardMaterial({color:0x254d75,roughness:.65});
 
+// Закрытые металлические кабельные короба
+const cableTrayMat=new THREE.MeshStandardMaterial({
+ color:0x9da8ad,
+ metalness:.75,
+ roughness:.38
+});
+
+const cableLidMat=new THREE.MeshStandardMaterial({
+ color:0xc0c8cc,
+ metalness:.8,
+ roughness:.32
+});
+
 function makeCable(points,mat,parent){
- const curve=new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(p[0],p[1],p[2])));
- const geometry=new THREE.TubeGeometry(curve,Math.max(12,points.length*6),.025,6,false);
- const mesh=new THREE.Mesh(geometry,mat);
- mesh.castShadow=true;parent.add(mesh);return mesh;
+ for(let i=0;i<points.length-1;i++){
+  const a=new THREE.Vector3(...points[i]);
+  const b=new THREE.Vector3(...points[i+1]);
+  const direction=new THREE.Vector3().subVectors(b,a);
+  const length=direction.length();
+
+  if(length<.01)continue;
+
+  const center=new THREE.Vector3().addVectors(a,b).multiplyScalar(.5);
+  const rotation=new THREE.Quaternion()
+   .setFromUnitVectors(new THREE.Vector3(0,0,1),direction.normalize());
+
+  const body=new THREE.Mesh(
+   new THREE.BoxGeometry(.16,.12,length),
+   cableTrayMat
+  );
+
+  body.position.copy(center);
+  body.quaternion.copy(rotation);
+  parent.add(body);
+
+  const lid=new THREE.Mesh(
+   new THREE.BoxGeometry(.175,.018,length),
+   cableLidMat
+  );
+
+  lid.position.set(0,.065,0);
+  lid.position.applyQuaternion(rotation);
+  lid.position.add(center);
+  lid.quaternion.copy(rotation);
+  parent.add(lid);
+ }
 }
 
 let placed=[];
