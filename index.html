@@ -1114,7 +1114,7 @@ if(inverterObjects.length&&panelObjects.length){
  const trayGroup=new THREE.Group();
 
  // Основной широкий кабельный лоток
- const mainX=3.8;
+ const mainX=4.5;
  const minZ=Math.min(...state.panels.map(p=>p.z))-1;
  const maxZ=Math.max(...state.panels.map(p=>p.z))+1;
 
@@ -1153,9 +1153,10 @@ if(inverterObjects.length&&panelObjects.length){
  // Узкие ответвления между рядами
  const rows=[...new Set(state.panels.map(p=>p.z))].sort((a,b)=>a-b);
 
- rows.forEach(z=>{
-  tray(-6,z,mainX,z,.18);
- });
+ for(let i=0;i<rows.length-1;i++){
+ const middleZ=(rows[i]+rows[i+1])/2;
+ tray(-6,middleZ,mainX,middleZ,.18);
+}
 
  // Подключение основного лотка к инвертору
  const nearest=inverterObjects[0];
