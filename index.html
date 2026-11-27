@@ -1269,10 +1269,15 @@ const daylight=isDay?1:
  document.getElementById("sunstate").textContent=label;
 }
 
-/* АНИМАЦИЯ */
+/* ОПТИМИЗИРОВАННАЯ АНИМАЦИЯ */
+
+// Освещение обновляем раз в секунду
+updateLighting();
+setInterval(updateLighting,1000);
+
+// Камера и сцена рендерятся отдельно
 function animate(){
  requestAnimationFrame(animate);
- updateLighting();
  renderer.render(scene,camera);
 }
 animate();
