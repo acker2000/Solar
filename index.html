@@ -590,8 +590,7 @@ function cylinder(r1,r2,h,mat,x,y,z,parent=scene){
 const ground=new THREE.Mesh(new THREE.PlaneGeometry(100,100),grassMat);
 ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
 
-const grid=new THREE.GridHelper(24,24,0x8b9d72,0x71895d);
-grid.position.y=.025;scene.add(grid);
+
 
 /* ДОРОГА */
 box(3,.035,28,material(0x777a72),-9,.02,0);
