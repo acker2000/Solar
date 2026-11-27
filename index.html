@@ -1109,30 +1109,61 @@ function rebuild(){
  }
  if(state.battery)placed.push(makeBattery(5.5,5));
 
- if(inverterObjects.length&&panelObjects.length){
-  const cableGroup=new THREE.Group();
-  panelObjects.forEach((panel,index)=>{
-   const p=state.panels[index];
-   let nearest=inverterObjects[0];
-   let best=Infinity;
-   inverterObjects.forEach(inv=>{
-    const d=Math.hypot(p.x-inv.x,p.z-inv.z);
-    if(d<best){best=d;nearest=inv;}
-   });
-   const endX=nearest.x-.48;
-   const endZ=nearest.z;
-   const startX=p.x+.7;
-   const startZ=p.z+.38;
-   makeCable([
-    [startX,.42,startZ],
-    [startX,.18,startZ],
-    [(startX+endX)/2,.13,(startZ+endZ)/2],
-    [endX,.18,endZ],
-    [endX,.35,endZ]
-   ],index%2===0?cableRed:cableBlack,cableGroup);
-  });
-  placed.push(cableGroup);scene.add(cableGroup);
+if(inverterObjects.length&&panelObjects.length){
+
+ const trayGroup=new THREE.Group();
+
+ // Основной широкий кабельный лоток
+ const mainX=3.8;
+ const minZ=Math.min(...state.panels.map(p=>p.z))-1;
+ const maxZ=Math.max(...state.panels.map(p=>p.z))+1;
+
+ function tray(x1,z1,x2,z2,width){
+  const dx=x2-x1;
+  const dz=z2-z1;
+  const length=Math.sqrt(dx*dx+dz*dz);
+  const angle=Math.atan2(dx,dz);
+
+  const body=new THREE.Mesh(
+   new THREE.BoxGeometry(width,.12,length),
+   cableTrayMat
+  );
+
+  body.position.set(
+   (x1+x2)/2,.13,(z1+z2)/2
+  );
+  body.rotation.y=angle;
+  trayGroup.add(body);
+
+  const lid=new THREE.Mesh(
+   new THREE.BoxGeometry(width+.035,.025,length),
+   cableLidMat
+  );
+
+  lid.position.set(
+   (x1+x2)/2,.205,(z1+z2)/2
+  );
+  lid.rotation.y=angle;
+  trayGroup.add(lid);
  }
+
+ // Продольный основной лоток
+ tray(mainX,minZ,mainX,maxZ,.42);
+
+ // Узкие ответвления между рядами
+ const rows=[...new Set(state.panels.map(p=>p.z))].sort((a,b)=>a-b);
+
+ rows.forEach(z=>{
+  tray(-6,z,mainX,z,.18);
+ });
+
+ // Подключение основного лотка к инвертору
+ const nearest=inverterObjects[0];
+ tray(mainX,nearest.z,nearest.x-.5,nearest.z,.42);
+
+ placed.push(trayGroup);
+ scene.add(trayGroup);
+}
 
  if(transformerPosition&&inverterObjects.length){
   const group=new THREE.Group();
