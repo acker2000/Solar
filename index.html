@@ -527,7 +527,50 @@ scene.add(moonLight);
 function material(color,rough=.8,metal=0){
  return new THREE.MeshStandardMaterial({color,roughness:rough,metalness:metal});
 }
-const grassMat=material(0x3f9b35,.95,0);
+// Реалистичный короткий газон
+const grassCanvas=document.createElement("canvas");
+grassCanvas.width=256;
+grassCanvas.height=256;
+
+const grassCtx=grassCanvas.getContext("2d");
+grassCtx.fillStyle="#438f35";
+grassCtx.fillRect(0,0,256,256);
+
+// Мелкие травинки и оттенки газона
+for(let i=0;i<3500;i++){
+ const x=Math.random()*256;
+ const y=Math.random()*256;
+ const h=1+Math.random()*4;
+
+ grassCtx.strokeStyle=[
+  "#5ca747",
+  "#367d2e",
+  "#70ad4e",
+  "#438a34",
+  "#55983e"
+ ][Math.floor(Math.random()*5)];
+
+ grassCtx.globalAlpha=.25+Math.random()*.35;
+ grassCtx.lineWidth=.5+Math.random()*.7;
+ grassCtx.beginPath();
+ grassCtx.moveTo(x,y);
+ grassCtx.lineTo(x+Math.random()*2-1,y-h);
+ grassCtx.stroke();
+}
+
+grassCtx.globalAlpha=1;
+
+const grassTexture=new THREE.CanvasTexture(grassCanvas);
+grassTexture.wrapS=THREE.RepeatWrapping;
+grassTexture.wrapT=THREE.RepeatWrapping;
+grassTexture.repeat.set(40,40);
+grassTexture.encoding=THREE.sRGBEncoding;
+
+const grassMat=new THREE.MeshStandardMaterial({
+ map:grassTexture,
+ roughness:1,
+ metalness:0
+});
 const metalMat=material(0x87949a,.35,.8);
 const glassMat=material(0x102d49,.25,.65);
 
