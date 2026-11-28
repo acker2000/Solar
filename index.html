@@ -1372,33 +1372,57 @@ function updateInverterModal(){
   live.dc.toFixed(2)+" kW";
 
 
-const longiCount=state.panels.filter(
- p=>Number(p.watt)===645
-).length;
+ const longiCount=state.panels.filter(
+  p=>Number(p.watt)===645
+ ).length;
 
-const fullStrings=Math.floor(longiCount/15);
-const rest=longiCount%15;
+ const fullStrings=Math.floor(longiCount/15);
+ const rest=longiCount%15;
 
-const strings=getLongiStrings();
-const longestString=fullStrings>0?15:(rest>=5?rest:0);
+ const stringLengths=Array(fullStrings).fill(15);
 
-const pvVoltage=longestString*40.88;
+ if(rest>=5){
+  stringLengths.push(rest);
+ }
 
-const nominalCurrent=strings*15.78;
-const activePower=getActivePanelPower();
+ const strings=stringLengths.length;
+ const activePower=getActivePanelPower();
+ const powerFactor=activePower>0?live.dc/activePower:0;
 
-const pvCurrent=activePower>0
- ? nominalCurrent*(live.dc/activePower)
- : 0;
+ let totalCurrent=0;
+ let maxVoltage=0;
 
-document.getElementById("invPvVoltage").textContent=
- pvVoltage.toFixed(0)+" V";
+ const details=stringLengths.map((count,index)=>{
+  const voltage=count*40.88;
+  const power=count*0.645*powerFactor;
+  const current=voltage>0?power*1000/voltage:0;
 
-document.getElementById("invPvCurrent").textContent=
- pvCurrent.toFixed(2)+" A";
+  totalCurrent+=current;
+  maxVoltage=Math.max(maxVoltage,voltage);
 
-document.getElementById("invPvStrings").textContent=
- strings;
+  return `
+   <div class="monitor-value">
+    <span>СТРИНГ ${index+1} — ${count} панелей</span>
+    <b>${power.toFixed(2)} kW</b>
+    <div style="font-size:13px;color:#9bb8bd;margin-top:8px">
+     Напряжение: ${voltage.toFixed(0)} V<br>
+     Ток: ${current.toFixed(2)} A
+    </div>
+   </div>
+  `;
+ }).join("");
+
+ document.getElementById("invPvVoltage").textContent=
+  maxVoltage.toFixed(0)+" V";
+
+ document.getElementById("invPvCurrent").textContent=
+  totalCurrent.toFixed(2)+" A";
+
+ document.getElementById("invPvStrings").textContent=
+  strings;
+
+ document.getElementById("invPvStringDetails").innerHTML=
+  details || "<div class='monitor-value'>Нет активных стрингов</div>";
 
 
  // Сеть AC
