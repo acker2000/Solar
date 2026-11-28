@@ -1338,8 +1338,16 @@ function updateInverterModal(){
  document.getElementById("invPvPower").textContent=
   live.dc.toFixed(2)+" kW";
 
- document.getElementById("invPvVoltage").textContent="—";
- document.getElementById("invPvCurrent").textContent="—";
+
+ const pvVoltage=getInstalledPower()>0?400:0;
+ const pvCurrent=pvVoltage>0?(live.dc*1000/pvVoltage):0;
+
+ document.getElementById("invPvVoltage").textContent=
+  pvVoltage.toFixed(0)+" V";
+
+ document.getElementById("invPvCurrent").textContent=
+  pvCurrent.toFixed(2)+" A";
+
 
  // Сеть AC
  document.getElementById("invAcPower").textContent=
