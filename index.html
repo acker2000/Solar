@@ -493,6 +493,24 @@ function save(){
 function getInstalledPower(){
  return state.panels.reduce((sum,p)=>sum+(Number(p.watt)||0),0)/1000;
 }
+ function getActivePanelPower(){
+ const longiCount=state.panels.filter(
+  p=>Number(p.watt)===645
+ ).length;
+
+ const fullStrings=Math.floor(longiCount/15);
+ const remainder=longiCount%15;
+
+ const activeLongi=fullStrings*15+
+  (remainder>=5?remainder:0);
+
+ const otherPower=state.panels.reduce(
+  (sum,p)=>sum+(Number(p.watt)!==645?(Number(p.watt)||0):0),
+  0
+ );
+
+ return (activeLongi*645+otherPower)/1000;
+}
 function getInverterPower(){
  return state.inverters.reduce((sum,i)=>sum+(Number(i.kw)||0),0);
 }
