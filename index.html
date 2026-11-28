@@ -1371,14 +1371,33 @@ function updateInverterModal(){
   live.dc.toFixed(2)+" kW";
 
 
- const pvVoltage=getInstalledPower()>0?400:0;
- const pvCurrent=pvVoltage>0?(live.dc*1000/pvVoltage):0;
+const longiCount=state.panels.filter(
+ p=>Number(p.watt)===645
+).length;
 
- document.getElementById("invPvVoltage").textContent=
-  pvVoltage.toFixed(0)+" V";
+const fullStrings=Math.floor(longiCount/15);
+const rest=longiCount%15;
 
- document.getElementById("invPvCurrent").textContent=
-  pvCurrent.toFixed(2)+" A";
+const strings=getLongiStrings();
+const longestString=fullStrings>0?15:(rest>=5?rest:0);
+
+const pvVoltage=longestString*40.88;
+
+const nominalCurrent=strings*15.78;
+const activePower=getActivePanelPower();
+
+const pvCurrent=activePower>0
+ ? nominalCurrent*(live.dc/activePower)
+ : 0;
+
+document.getElementById("invPvVoltage").textContent=
+ pvVoltage.toFixed(0)+" V";
+
+document.getElementById("invPvCurrent").textContent=
+ pvCurrent.toFixed(2)+" A";
+
+document.getElementById("invPvStrings").textContent=
+ strings;
 
 
  // Сеть AC
