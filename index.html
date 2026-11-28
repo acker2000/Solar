@@ -1323,13 +1323,43 @@ function closeInverterModal(){
 }
 
 // Обновление показаний большого экрана
+
 function updateInverterModal(){
+ const live=getSolarOutput();
+
+ // Главная
  document.getElementById("modalInstalled").textContent=
   getInstalledPower().toFixed(2)+" kWp";
 
  document.getElementById("modalOutput").textContent=
-  getSolarOutput().ac.toFixed(2)+" kW";
+  live.ac.toFixed(2)+" kW";
+
+ // PV — солнечные панели
+ document.getElementById("invPvPower").textContent=
+  live.dc.toFixed(2)+" kW";
+
+ document.getElementById("invPvVoltage").textContent="—";
+ document.getElementById("invPvCurrent").textContent="—";
+
+ // Сеть AC
+ document.getElementById("invAcPower").textContent=
+  live.ac.toFixed(2)+" kW";
+
+ // Батарея
+ document.getElementById("invBatteryStatus").textContent=
+  state.battery?"Установлен":"Не установлен";
+
+ document.getElementById("invBatteryLevel").textContent=
+  state.battery?"Пока без расчёта":"—";
+
+ // Статистика
+ document.getElementById("invTotalEnergy").textContent=
+  state.energy.toFixed(1)+" kWh";
+
+ document.getElementById("invTotalSold").textContent=
+  state.totalSold.toFixed(1)+" kWh";
 }
+
 function showInverterPage(page){
  const pages={
   overview:"invPageOverview",
