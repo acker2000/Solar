@@ -1330,7 +1330,22 @@ function updateInverterModal(){
  document.getElementById("modalOutput").textContent=
   getSolarOutput().ac.toFixed(2)+" kW";
 }
+function showInverterPage(page){
+ const pages={
+  overview:"invPageOverview",
+  pv:"invPagePv",
+  ac:"invPageAc",
+  battery:"invPageBattery",
+  stats:"invPageStats",
+  settings:"invPageSettings"
+ };
 
+ Object.values(pages).forEach(id=>{
+  document.getElementById(id).style.display="none";
+ });
+
+ document.getElementById(pages[page]).style.display="block";
+}
 // Распознавание нажатия на 3D-дисплей
 const inverterRaycaster=new THREE.Raycaster();
 const inverterPointer=new THREE.Vector2();
