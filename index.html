@@ -301,6 +301,61 @@ margin-bottom:6px;pointer-events:auto;font-size:10px">
    <span>ТЕКУЩАЯ ГЕНЕРАЦИЯ</span>
    <b id="modalOutput">0.00 kW</b>
   </div>
+  
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:14px">
+   <button onclick="showInverterPage('overview')">Главная</button>
+   <button onclick="showInverterPage('pv')">PV</button>
+   <button onclick="showInverterPage('ac')">Сеть AC</button>
+   <button onclick="showInverterPage('battery')">Батарея</button>
+   <button onclick="showInverterPage('stats')">Статистика</button>
+   <button onclick="showInverterPage('settings')">Настройки</button>
+  </div>
+
+  <div id="invPageOverview">
+   <div class="monitor-value">
+    <span>ОБЩАЯ МОЩНОСТЬ ПАНЕЛЕЙ</span>
+    <b id="modalInstalled">0.00 kWp</b>
+   </div>
+   <div class="monitor-value">
+    <span>ТЕКУЩАЯ ГЕНЕРАЦИЯ</span>
+    <b id="modalOutput">0.00 kW</b>
+   </div>
+   <div class="monitor-footer">Состояние: <b>Нормальная работа</b></div>
+  </div>
+
+  <div id="invPagePv" style="display:none">
+   <div class="monitor-value"><span>Мощность PV</span><b id="invPvPower">0.00 kW</b></div>
+   <div class="monitor-value"><span>Напряжение PV</span><b id="invPvVoltage">0 V</b></div>
+   <div class="monitor-value"><span>Ток PV</span><b id="invPvCurrent">0 A</b></div>
+  </div>
+
+  <div id="invPageAc" style="display:none">
+   <div class="monitor-value"><span>Выходная мощность AC</span><b id="invAcPower">0.00 kW</b></div>
+   <div class="monitor-value"><span>Частота сети</span><b>50.0 Hz</b></div>
+   <div class="monitor-value"><span>Напряжение сети</span><b>230 V</b></div>
+  </div>
+
+  <div id="invPageBattery" style="display:none">
+   <div class="monitor-value"><span>Аккумулятор</span><b id="invBatteryStatus">Не установлен</b></div>
+   <div class="monitor-value"><span>Уровень заряда</span><b id="invBatteryLevel">—</b></div>
+  </div>
+
+  <div id="invPageStats" style="display:none">
+   <div class="monitor-value"><span>Выработка за всё время</span><b id="invTotalEnergy">0.0 kWh</b></div>
+   <div class="monitor-value"><span>Продано энергии</span><b id="invTotalSold">0.0 kWh</b></div>
+  </div>
+
+  <div id="invPageSettings" style="display:none">
+   <div class="monitor-value">
+    <span>Режим работы</span>
+    <b>Продажа в сеть</b>
+   </div>
+   <div class="monitor-value">
+    <span>Состояние системы</span>
+    <b>Автоматический режим</b>
+   </div>
+  </div>
+
 
   <div class="monitor-footer">
    SOLAR TYCOON 3D
