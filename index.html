@@ -515,6 +515,16 @@ function getInstalledPower(){
 
  return (activeLongi*645+otherPower)/1000;
 }
+ function getLongiStrings(){
+ const count=state.panels.filter(
+  p=>Number(p.watt)===645
+ ).length;
+
+ const full=Math.floor(count/15);
+ const rest=count%15;
+
+ return full+(rest>=5?1:0);
+}
 function getInverterPower(){
  return state.inverters.reduce((sum,i)=>sum+(Number(i.kw)||0),0);
 }
